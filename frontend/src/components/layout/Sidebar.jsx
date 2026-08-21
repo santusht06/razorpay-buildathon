@@ -1,87 +1,164 @@
 import React from 'react';
 import { 
-  LayoutDashboard, 
+  Home, 
+  ArrowLeftRight, 
+  Landmark, 
+  FileText, 
+  Link, 
+  FileCheck, 
+  QrCode, 
   RotateCcw, 
-  CreditCard, 
-  ShieldCheck, 
+  PieChart, 
   BarChart3, 
   Settings, 
-  PieChart,
-  ChevronRight,
-  ShieldAlert
+  ChevronDown,
+  Sparkles
 } from 'lucide-react';
 
 export const Sidebar = ({ activeTab, setActiveTab }) => {
-  const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'recoveries', label: 'Recovery Cases', icon: RotateCcw },
-    { id: 'analytics', label: 'Financial Analytics', icon: PieChart },
-    { id: 'payments', label: 'Payments Ledger', icon: CreditCard },
-    { id: 'audit', label: 'Audit Trail', icon: ShieldCheck },
-    { id: 'evaluation', label: 'AI Benchmark', icon: BarChart3, badge: 'Baseline vs AI' },
-    { id: 'settings', label: 'Policy Guardrails', icon: Settings },
-  ];
-
   return (
-    <aside className="w-64 bg-white border-r border-slate-200 flex flex-col justify-between h-screen sticky top-0 shrink-0 select-none shadow-sm">
-      <div>
-        {/* Razorpay Brand Header */}
-        <div className="h-16 px-6 flex items-center space-x-3 border-b border-slate-100 bg-slate-50/50">
-          <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20 font-bold">
-            <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-            </svg>
-          </div>
-          <div>
-            <div className="font-extrabold text-sm text-slate-900 tracking-tight leading-none">Razorpay</div>
-            <div className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mt-0.5">AI Revenue Recovery</div>
-          </div>
+    <aside className="w-56 bg-[#f8fafc] border-r border-slate-200 flex flex-col justify-between h-[calc(100vh-3.5rem)] sticky top-14 shrink-0 select-none text-xs">
+      <div className="p-3 space-y-6 overflow-y-auto">
+        
+        {/* Core Links */}
+        <div className="space-y-1">
+          <button
+            onClick={() => setActiveTab('dashboard')}
+            className={`w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg font-medium transition-colors ${
+              activeTab === 'dashboard'
+                ? 'bg-slate-200/80 text-slate-900 font-bold'
+                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+            }`}
+          >
+            <Home className="w-4 h-4 text-slate-500" />
+            <span>Home</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('dashboard')}
+            className={`w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg font-medium transition-colors ${
+              activeTab === 'dashboard'
+                ? 'bg-slate-200/80 text-slate-900 font-bold'
+                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+            }`}
+          >
+            <ArrowLeftRight className="w-4 h-4 text-slate-500" />
+            <span>Transactions</span>
+          </button>
+
+          <button className="w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors font-medium">
+            <Landmark className="w-4 h-4 text-slate-500" />
+            <span>Settlements</span>
+          </button>
+
+          <button className="w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors font-medium">
+            <FileText className="w-4 h-4 text-slate-500" />
+            <span>Reports</span>
+          </button>
         </div>
 
-        {/* Navigation items */}
-        <nav className="p-3 space-y-1">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = activeTab === item.id;
+        {/* AI REVENUE RECOVERY SECTION */}
+        <div className="space-y-1">
+          <div className="text-[10px] font-extrabold text-blue-700 uppercase tracking-wider px-3 mb-1.5 flex items-center space-x-1">
+            <Sparkles className="w-3 h-3 text-amber-500 fill-current" />
+            <span>AI Revenue Recovery</span>
+          </div>
 
-            return (
-              <button
-                key={item.id}
-                onClick={() => setActiveTab(item.id)}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg text-xs transition-all ${
-                  isActive
-                    ? 'bg-blue-50 text-blue-700 font-bold border-l-4 border-blue-600 shadow-sm'
-                    : 'text-slate-600 font-medium hover:text-slate-900 hover:bg-slate-50'
-                }`}
-              >
-                <div className="flex items-center space-x-3">
-                  <Icon className={`w-4 h-4 ${isActive ? 'text-blue-600' : 'text-slate-400'}`} />
-                  <span>{item.label}</span>
-                </div>
-                {item.badge ? (
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-md font-bold bg-purple-50 text-purple-700 border border-purple-200">
-                    {item.badge}
-                  </span>
-                ) : (
-                  isActive && <ChevronRight className="w-3.5 h-3.5 text-blue-600" />
-                )}
-              </button>
-            );
-          })}
-        </nav>
+          <button
+            onClick={() => setActiveTab('recoveries')}
+            className={`w-full flex items-center justify-between px-3 py-2 rounded-lg transition-colors font-medium ${
+              activeTab === 'recoveries' || activeTab === 'recovery-detail'
+                ? 'bg-slate-200/80 text-slate-900 font-bold'
+                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+            }`}
+          >
+            <div className="flex items-center space-x-2.5">
+              <RotateCcw className="w-4 h-4 text-slate-500" />
+              <span>Revenue Cases</span>
+            </div>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('analytics')}
+            className={`w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg transition-colors font-medium ${
+              activeTab === 'analytics'
+                ? 'bg-slate-200/80 text-slate-900 font-bold'
+                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+            }`}
+          >
+            <PieChart className="w-4 h-4 text-slate-500" />
+            <span>Financial Analytics</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('evaluation')}
+            className={`w-full flex items-center justify-between px-3 py-2 rounded-lg transition-colors font-medium ${
+              activeTab === 'evaluation'
+                ? 'bg-slate-200/80 text-slate-900 font-bold'
+                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+            }`}
+          >
+            <div className="flex items-center space-x-2.5">
+              <BarChart3 className="w-4 h-4 text-slate-500" />
+              <span>AI Benchmark</span>
+            </div>
+            <span className="text-[9px] px-1 py-0.2 rounded font-bold bg-purple-100 text-purple-700">Rules vs AI</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('settings')}
+            className={`w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg transition-colors font-medium ${
+              activeTab === 'settings'
+                ? 'bg-slate-200/80 text-slate-900 font-bold'
+                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+            }`}
+          >
+            <Settings className="w-4 h-4 text-slate-500" />
+            <span>Policy Engine</span>
+          </button>
+        </div>
+
+        {/* PAYMENT PRODUCTS SECTION (from screenshot) */}
+        <div className="space-y-1">
+          <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-3 mb-1.5">
+            PAYMENT PRODUCTS
+          </div>
+
+          <button className="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors font-medium">
+            <div className="flex items-center space-x-2.5">
+              <Link className="w-3.5 h-3.5 text-slate-400" />
+              <span>Payment Links</span>
+            </div>
+            <span className="text-[9px] px-1 py-0.2 rounded font-bold bg-emerald-100 text-emerald-700">New Update</span>
+          </button>
+
+          <button className="w-full flex items-center space-x-2.5 px-3 py-1.5 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors font-medium">
+            <FileCheck className="w-3.5 h-3.5 text-slate-400" />
+            <span>Payment Pages</span>
+          </button>
+
+          <button className="w-full flex items-center space-x-2.5 px-3 py-1.5 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors font-medium">
+            <QrCode className="w-3.5 h-3.5 text-slate-400" />
+            <span>Razorpay.me Link</span>
+          </button>
+
+          <button className="w-full flex items-center space-x-1 text-slate-400 px-3 py-1.5 hover:text-slate-700 font-medium">
+            <span>+9 More</span>
+            <ChevronDown className="w-3 h-3" />
+          </button>
+        </div>
+
       </div>
 
-      {/* Footer merchant badge */}
-      <div className="p-4 border-t border-slate-100 bg-slate-50/50">
-        <div className="bg-white rounded-xl p-3 border border-slate-200 shadow-sm flex items-center space-x-3">
-          <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center font-extrabold text-xs text-blue-700 border border-blue-200">
-            RZ
-          </div>
-          <div className="text-xs truncate">
-            <div className="font-bold text-slate-900 truncate">Razorpay Merchant</div>
-            <div className="text-[10px] text-slate-500 font-mono">MID: mch_8829</div>
-          </div>
-        </div>
+      {/* Pinned Bottom Account & Settings (from screenshot) */}
+      <div className="p-3 border-t border-slate-200 bg-[#f8fafc]">
+        <button
+          onClick={() => setActiveTab('settings')}
+          className="w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-slate-700 hover:bg-slate-200/80 transition-colors font-bold"
+        >
+          <Settings className="w-4 h-4 text-slate-600" />
+          <span>Account & Settings</span>
+        </button>
       </div>
     </aside>
   );

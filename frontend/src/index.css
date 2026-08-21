@@ -5,18 +5,18 @@
 @tailwind utilities;
 
 body {
-  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background-color: #f8fafc;
-  color: #0f172a;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: #f4f6f8;
+  color: #0d121c;
   margin: 0;
   padding: 0;
   -webkit-font-smoothing: antialiased;
 }
 
-/* Custom crisp scrollbars */
+/* Custom Razorpay Scrollbars */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
@@ -32,18 +32,25 @@ body {
   background: #94a3b8;
 }
 
-/* Razorpay Clean White Card */
-.glass-card {
+/* Official Razorpay Card Styling */
+.rzp-card {
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+  border-radius: 12px;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
 }
 
-.glass-card-hover {
-  transition: all 0.2s ease-in-out;
+.rzp-card-hover {
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.glass-card-hover:hover {
+.rzp-card-hover:hover {
   border-color: #cbd5e1;
-  box-shadow: 0 10px 25px -5px rgba(0, 102, 204, 0.08), 0 8px 10px -6px rgba(0, 102, 204, 0.04);
+  box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.06);
+}
+
+.rzp-tab-active {
+  color: #0066cc;
+  border-bottom: 2px solid #0066cc;
+  font-weight: 700;
 }
