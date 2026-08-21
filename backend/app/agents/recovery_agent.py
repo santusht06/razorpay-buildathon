@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 class RecoveryAgent:
     """
-    LangChain AI Recovery Agent with RAG integration & structured decision output.
+    LangChain AI Recovery Agent with Groq AI integration, RAG vector retrieval, and fallback.
     """
 
     @classmethod
@@ -26,7 +26,7 @@ class RecoveryAgent:
         """
         Executes AI diagnosis loop:
         1. Context Retrieval (Payment, Customer, RAG Policies)
-        2. Diagnosis & Strategy Reasoning
+        2. Diagnosis & Strategy Reasoning (Groq AI / OpenAI / Gemini / Heuristic)
         3. Structured Output Generation
         """
         failure_reason = payment.get("failure_reason", "unknown")
@@ -45,16 +45,21 @@ class RecoveryAgent:
         query = f"{failure_reason} {payment_method} amount {amount}"
         rag_policies = policy_retriever.retrieve_relevant_policies(query, top_k=2)
 
-        # 2. Try LLM Execution if API key is available
-        llm_decision = None
+        # 2. Try Groq AI Execution if GROQ_API_KEY is configured
+        if settings.GROQ_API_KEY:
+            groq_decision = await cls._invoke_llm_groq(payment, customer, case, rag_policies)
+            if groq_decision:
+                groq_decision["rag_policies_used"] = rag_policies
+                return groq_decision
+
+        # 3. Try OpenAI Execution if OPENAI_API_KEY is configured
         if settings.OPENAI_API_KEY:
-            llm_decision = await cls._invoke_llm_openai(payment, customer, case, rag_policies)
+            openai_decision = await cls._invoke_llm_openai(payment, customer, case, rag_policies)
+            if openai_decision:
+                openai_decision["rag_policies_used"] = rag_policies
+                return openai_decision
 
-        if llm_decision:
-            llm_decision["rag_policies_used"] = rag_policies
-            return llm_decision
-
-        # 3. High-Precision Heuristic AI Engine Fallback (Zero external dependency required)
+        # 4. High-Precision Heuristic AI Engine Fallback (Zero external dependency required)
         heuristic_decision = cls._heuristic_reasoning(
             failure_reason=failure_reason,
             amount=amount,
@@ -67,6 +72,57 @@ class RecoveryAgent:
         )
         
         return heuristic_decision
+
+    @classmethod
+    async def _invoke_llm_groq(cls, payment: Dict[str, Any], customer: Dict[str, Any], case: Dict[str, Any], policies: list) -> Optional[Dict[str, Any]]:
+        """
+        Executes Groq AI LLM inference using ChatGroq / Groq API.
+        """
+        try:
+            from langchain_groq import ChatGroq
+            llm = ChatGroq(
+                groq_api_key=settings.GROQ_API_KEY,
+                model_name=settings.GROQ_MODEL,
+                temperature=0.1
+            )
+            
+            user_prompt = f"""
+            Payment ID: {payment.get('payment_id')}
+            Amount: ₹{payment.get('amount')}
+            Failure Reason: {payment.get('failure_reason')}
+            Error Description: {payment.get('error_description')}
+            Payment Method: {payment.get('payment_method')}
+            
+            Customer: {customer.get('name')} (LTV: ₹{customer.get('ltv')})
+            Customer History: {json.dumps(customer.get('history_summary', {}))}
+            
+            Relevant RAG Merchant Policies:
+            {json.dumps(policies, indent=2)}
+            """
+            
+            response = await llm.ainvoke([
+                {"role": "system", "content": RECOVERY_AGENT_SYSTEM_PROMPT},
+                {"role": "user", "content": user_prompt}
+            ])
+            
+            content = response.content.strip()
+            if content.startswith("```"):
+                content = content.split("```")[1]
+                if content.startswith("json"):
+                    content = content[4:]
+            
+            parsed = json.loads(content.strip())
+            return {
+                "diagnosis": parsed.get("diagnosis", "temporary_payment_failure"),
+                "recovery_probability": float(parsed.get("recovery_probability", 0.85)),
+                "recommended_action": parsed.get("recommended_action", ActionType.SEND_RECOVERY_EMAIL.value),
+                "reasoning_summary": parsed.get("reasoning_summary", "Groq AI diagnosed payment failure based on merchant policy."),
+                "confidence": float(parsed.get("confidence", 0.94)),
+                "source": f"groq_llm ({settings.GROQ_MODEL})"
+            }
+        except Exception as e:
+            logger.warning(f"Groq AI execution failed: {e}. Falling back to next AI provider or heuristic engine.")
+            return None
 
     @classmethod
     async def _invoke_llm_openai(cls, payment: Dict[str, Any], customer: Dict[str, Any], case: Dict[str, Any], policies: list) -> Optional[Dict[str, Any]]:

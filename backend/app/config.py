@@ -15,14 +15,16 @@ class Settings(BaseSettings):
     RAZORPAY_KEY_SECRET: str = "rzp_sec_hackathon_demo_secret"
     RAZORPAY_WEBHOOK_SECRET: str = "whsec_hackathon_demo_secret"
     
-    # LLM Settings
+    # LLM Settings (Groq AI, OpenAI, Gemini)
+    GROQ_API_KEY: str = ""
+    GROQ_MODEL: str = "llama-3.3-70b-versatile"
     OPENAI_API_KEY: str = ""
     GEMINI_API_KEY: str = ""
     DEFAULT_LLM_MODEL: str = "gpt-4o-mini"
     
     # Guardrail Limits
     MAX_AUTO_RETRIES: int = 3
-    MAX_AUTO_RECOVERY_AMOUNT: float = 100000.0  # ₹100,000
+    MAX_AUTO_RECOVERY_AMOUNT: float = 50000.0  # ₹50,000
     HIGH_VALUE_THRESHOLD: float = 10000.0      # ₹10,000
     
     class Config:

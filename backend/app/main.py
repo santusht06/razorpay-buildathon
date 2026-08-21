@@ -27,8 +27,8 @@ async def seed_initial_demo_data():
         {"amount": 2499.0, "reason": "insufficient_funds", "name": "Aarav Patel", "email": "aarav.patel@example.com"},
         {"amount": 4999.0, "reason": "card_expired", "name": "Diya Sengupta", "email": "diya.s@example.com"},
         {"amount": 1499.0, "reason": "bank_outage", "name": "Rohan Verma", "email": "rohan.v@example.com"},
-        {"amount": 12500.0, "reason": "insufficient_funds", "name": "Vikram Malhotra", "email": "vikram.m@vip.com"}, # High value
-        {"amount": 999.0, "reason": "fraud_blocked", "name": "Unknown User", "email": "suspicious@example.com"}, # Terminal fraud
+        {"amount": 12500.0, "reason": "insufficient_funds", "name": "Vikram Malhotra", "email": "vikram.m@vip.com"},
+        {"amount": 999.0, "reason": "fraud_blocked", "name": "Unknown User", "email": "suspicious@example.com"},
         {"amount": 3999.0, "reason": "authentication_failed", "name": "Ananya Roy", "email": "ananya.roy@example.com"},
     ]
 
@@ -51,8 +51,6 @@ async def seed_initial_demo_data():
             }
         }
         res = await RecoveryService.process_failed_payment_event(payload)
-        
-        # Simulate recovery for first 2 cases so revenue recovered metric is non-zero right away!
         if sample["name"] in ["Aarav Patel", "Ananya Roy"]:
             await RecoveryService.simulate_customer_payment_recovery(res["case_id"])
 
@@ -67,7 +65,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title=settings.APP_NAME,
-    description="Autonomous Revenue Recovery Agent Platform for Razorpay Track 3",
+    description="Autonomous Revenue Recovery Agent Platform with Groq AI integration",
     version="1.0.0",
     lifespan=lifespan
 )
@@ -90,9 +88,11 @@ async def health_check():
         "status": "healthy",
         "app_name": settings.APP_NAME,
         "database": "in_memory" if DatabaseManager.is_in_memory else "mongodb",
-        "llm_configured": bool(settings.OPENAI_API_KEY or settings.GEMINI_API_KEY)
+        "groq_llm_configured": bool(settings.GROQ_API_KEY),
+        "groq_model": settings.GROQ_MODEL,
+        "openai_llm_configured": bool(settings.OPENAI_API_KEY)
     }
 
 @app.get("/")
 async def root():
-    return {"message": "Razorpay Revenue Recovery Agent API is running.", "docs": "/docs"}
+    return {"message": "Razorpay Revenue Recovery Agent API (Groq AI Enabled) is running.", "docs": "/docs"}
