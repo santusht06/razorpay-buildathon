@@ -36,40 +36,40 @@ export const WebhookSimulatorModal = ({ isOpen, onClose, onSuccess }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
-      <div className="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl">
-        <div className="bg-slate-950 px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+      <div className="bg-white border border-slate-200 rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl">
+        <div className="bg-slate-50 px-6 py-4 border-b border-slate-200 flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <Zap className="w-5 h-5 text-sky-400" />
-            <h3 className="font-semibold text-slate-100">Razorpay Webhook Simulator</h3>
+            <Zap className="w-5 h-5 text-blue-600 fill-current" />
+            <h3 className="font-extrabold text-slate-900 text-sm">Razorpay Webhook Simulator</h3>
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-200">
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         <form onSubmit={handleSimulate} className="p-6 space-y-4">
-          <p className="text-xs text-slate-400">
-            Simulate a live Razorpay <code className="bg-slate-800 px-1 py-0.5 rounded text-sky-300">payment.failed</code> webhook event to observe the Autonomous AI Recovery Agent in real-time.
+          <p className="text-xs text-slate-600 font-medium">
+            Simulate a live Razorpay <code className="bg-slate-100 px-1.5 py-0.5 rounded text-blue-700 font-mono">payment.failed</code> webhook event to observe the Groq AI Autonomous Recovery Agent in real-time.
           </p>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">Transaction Amount (₹)</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Transaction Amount (₹)</label>
               <input
                 type="number"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 required
-                className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-sky-500"
+                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900 font-semibold focus:outline-none focus:border-blue-600 focus:bg-white"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">Payment Method</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Payment Method</label>
               <select
                 value={paymentMethod}
                 onChange={(e) => setPaymentMethod(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-sky-500"
+                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900 font-semibold focus:outline-none focus:border-blue-600 focus:bg-white"
               >
                 <option value="card">Credit / Debit Card</option>
                 <option value="upi">UPI Auto-pay</option>
@@ -79,11 +79,11 @@ export const WebhookSimulatorModal = ({ isOpen, onClose, onSuccess }) => {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1">Failure Reason (Scenario)</label>
+            <label className="block text-xs font-bold text-slate-700 mb-1">Failure Reason (Scenario)</label>
             <select
               value={failureReason}
               onChange={(e) => setFailureReason(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-sky-500"
+              className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900 font-semibold focus:outline-none focus:border-blue-600 focus:bg-white"
             >
               <option value="insufficient_funds">Insufficient Funds (Soft Failure - Auto Recovery Link)</option>
               <option value="card_expired">Card Expired (Payment Method Update Needed)</option>
@@ -95,36 +95,36 @@ export const WebhookSimulatorModal = ({ isOpen, onClose, onSuccess }) => {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">Customer Name</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Customer Name</label>
               <input
                 type="text"
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-sky-500"
+                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900 font-medium focus:outline-none focus:border-blue-600 focus:bg-white"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">Customer Email</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Customer Email</label>
               <input
                 type="email"
                 value={customerEmail}
                 onChange={(e) => setCustomerEmail(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-sky-500"
+                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900 font-medium focus:outline-none focus:border-blue-600 focus:bg-white"
               />
             </div>
           </div>
 
           {result && (
-            <div className={`p-3 rounded-lg text-xs font-mono border ${result.error ? 'bg-rose-500/10 border-rose-500/30 text-rose-300' : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'}`}>
+            <div className={`p-3 rounded-lg text-xs font-mono border ${result.error ? 'bg-rose-50 border-rose-200 text-rose-700' : 'bg-emerald-50 border-emerald-200 text-emerald-800'}`}>
               {result.error ? (
                 <div className="flex items-center space-x-1.5">
-                  <AlertCircle className="w-4 h-4" />
+                  <AlertCircle className="w-4 h-4 text-rose-600" />
                   <span>{result.error}</span>
                 </div>
               ) : (
                 <div className="space-y-1">
-                  <div className="flex items-center font-bold text-emerald-400">
-                    <CheckCircle2 className="w-4 h-4 mr-1.5" />
+                  <div className="flex items-center font-bold text-emerald-700">
+                    <CheckCircle2 className="w-4 h-4 mr-1.5 text-emerald-600" />
                     Webhook Processed & Recovery Pipeline Triggered!
                   </div>
                   <div>Case ID: {result.recovery_pipeline_result?.case_id}</div>
@@ -139,14 +139,14 @@ export const WebhookSimulatorModal = ({ isOpen, onClose, onSuccess }) => {
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-slate-400 hover:text-slate-200"
+              className="px-4 py-2 text-sm font-semibold text-slate-600 hover:text-slate-900"
             >
               Close
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-5 py-2 bg-sky-600 hover:bg-sky-500 text-white font-medium text-sm rounded-lg flex items-center shadow-lg shadow-sky-600/30 transition-colors disabled:opacity-50"
+              className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-lg flex items-center shadow-md shadow-blue-600/30 transition-colors disabled:opacity-50"
             >
               <Play className="w-4 h-4 mr-1.5 fill-current" />
               {loading ? 'Triggering...' : 'Trigger Webhook Event'}

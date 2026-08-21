@@ -24,14 +24,14 @@ export const Payments = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-slate-100 tracking-tight">Payments Log</h1>
-        <p className="text-xs text-slate-400 mt-1">Raw Razorpay transaction ledger received via webhooks and payment gateways.</p>
+        <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Payments Ledger</h1>
+        <p className="text-xs text-slate-600 mt-1 font-medium">Raw Razorpay transaction log received via webhooks and payment gateways.</p>
       </div>
 
-      <div className="glass-card rounded-2xl border border-slate-800 overflow-hidden shadow-xl">
+      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-slate-300">
-            <thead className="bg-slate-950/80 text-slate-400 font-semibold border-b border-slate-800 uppercase tracking-wider text-[11px]">
+          <table className="w-full text-left text-xs text-slate-700">
+            <thead className="bg-slate-50 text-slate-500 font-bold border-b border-slate-200 uppercase tracking-wider text-[10px]">
               <tr>
                 <th className="py-3.5 px-5">Payment ID</th>
                 <th className="py-3.5 px-4">Customer ID</th>
@@ -41,26 +41,26 @@ export const Payments = () => {
                 <th className="py-3.5 px-4">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60 font-medium">
+            <tbody className="divide-y divide-slate-100 font-medium">
               {loading ? (
                 <tr>
-                  <td colSpan="6" className="py-8 text-center text-slate-500">Loading payments...</td>
+                  <td colSpan="6" className="py-8 text-center text-slate-500 font-sans">Loading payments...</td>
                 </tr>
               ) : payments.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="py-8 text-center text-slate-500">No payment logs found.</td>
+                  <td colSpan="6" className="py-8 text-center text-slate-500 font-sans">No payment logs found.</td>
                 </tr>
               ) : (
                 payments.map((p) => (
-                  <tr key={p.payment_id} className="hover:bg-slate-900/60 transition-colors">
-                    <td className="py-3.5 px-5 font-mono text-slate-100 font-bold">{p.payment_id}</td>
-                    <td className="py-3.5 px-4 text-slate-400 font-mono text-[11px]">{p.customer_id}</td>
-                    <td className="py-3.5 px-4 font-bold text-slate-100">₹{p.amount?.toLocaleString('en-IN')}</td>
-                    <td className="py-3.5 px-4 capitalize">{p.payment_method}</td>
-                    <td className="py-3.5 px-4 font-mono text-slate-400">{p.failure_reason || 'N/A'}</td>
+                  <tr key={p.payment_id} className="hover:bg-slate-50/80 transition-colors">
+                    <td className="py-3.5 px-5 font-mono text-slate-900 font-bold">{p.payment_id}</td>
+                    <td className="py-3.5 px-4 text-slate-500 font-mono text-[11px]">{p.customer_id}</td>
+                    <td className="py-3.5 px-4 font-extrabold text-slate-900">₹{p.amount?.toLocaleString('en-IN')}</td>
+                    <td className="py-3.5 px-4 capitalize font-semibold">{p.payment_method}</td>
+                    <td className="py-3.5 px-4 font-mono text-slate-600">{p.failure_reason || 'N/A'}</td>
                     <td className="py-3.5 px-4">
-                      <span className={`px-2 py-0.5 rounded text-[11px] font-semibold ${
-                        p.status === 'captured' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/10 text-rose-400 border border-rose-500/30'
+                      <span className={`px-2.5 py-1 rounded-md text-[11px] font-bold border ${
+                        p.status === 'captured' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200'
                       }`}>
                         {p.status}
                       </span>

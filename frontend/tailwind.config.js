@@ -7,23 +7,22 @@ export default {
   theme: {
     extend: {
       colors: {
-        brand: {
+        razorpay: {
           50: '#f0f7ff',
           100: '#e0effe',
-          500: '#0284c7',
-          600: '#0369a1',
-          700: '#075985',
-          900: '#0c4a6e',
-        },
-        razorpay: {
-          blue: '#0c2340',
-          cyan: '#0284c7',
-          emerald: '#059669',
-          dark: '#0b1329'
+          500: '#0066cc',
+          600: '#0052a3',
+          700: '#003d7a',
+          navy: '#0c2340',
+          dark: '#0a192f',
+          sky: '#edf5ff',
+          surface: '#ffffff',
+          slate: '#f8fafc',
+          border: '#e2e8f0',
         }
       },
       fontFamily: {
-        sans: ['Inter', 'Segoe UI', 'system-ui', 'sans-serif'],
+        sans: ['Inter', 'Mulish', 'Segoe UI', 'system-ui', 'sans-serif'],
       }
     },
   },

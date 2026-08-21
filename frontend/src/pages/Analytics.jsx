@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { BarChart3, IndianRupee, TrendingUp, ShieldCheck, AlertTriangle, XCircle } from 'lucide-react';
+import { BarChart3, IndianRupee, TrendingUp, ShieldCheck, AlertTriangle } from 'lucide-react';
 import { MetricCard } from '../components/ui/MetricCard';
 import { api } from '../api';
 
@@ -27,8 +27,8 @@ export const Analytics = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-slate-100 tracking-tight">Revenue Recovery Analytics</h1>
-        <p className="text-xs text-slate-400 mt-1">Financial performance analytics, strategy breakdowns, and recovery conversion rates.</p>
+        <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Revenue Recovery Analytics</h1>
+        <p className="text-xs text-slate-600 mt-1 font-medium">Financial performance analytics, strategy breakdowns, and recovery conversion rates.</p>
       </div>
 
       {/* KPI Cards */}
@@ -65,38 +65,38 @@ export const Analytics = () => {
 
       {/* Strategy Breakdown Tables */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="glass-card rounded-2xl border border-slate-800 p-6 space-y-4 shadow-xl">
-          <h3 className="font-bold text-slate-100 text-sm">Revenue Recovered by AI Strategy</h3>
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4 shadow-sm">
+          <h3 className="font-extrabold text-slate-900 text-sm">Revenue Recovered by AI Strategy</h3>
           
           <div className="space-y-3 text-xs">
             {(data?.recovery_by_strategy || []).map((s, idx) => (
-              <div key={idx} className="bg-slate-950 p-3 rounded-xl border border-slate-800 flex justify-between items-center">
+              <div key={idx} className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 flex justify-between items-center">
                 <div>
-                  <div className="font-bold text-slate-200">{s.strategy}</div>
-                  <div className="text-[10px] text-slate-400">{s.count} recovery executions</div>
+                  <div className="font-extrabold text-slate-900">{s.strategy}</div>
+                  <div className="text-[11px] text-slate-500 font-medium">{s.count} recovery executions</div>
                 </div>
                 <div className="text-right">
-                  <div className="font-bold text-emerald-400">₹{s.recovered_amount?.toLocaleString('en-IN')}</div>
-                  <div className="text-[10px] text-slate-400">Recovered</div>
+                  <div className="font-extrabold text-emerald-700">₹{s.recovered_amount?.toLocaleString('en-IN')}</div>
+                  <div className="text-[10px] text-slate-500 font-semibold">Recovered</div>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="glass-card rounded-2xl border border-slate-800 p-6 space-y-4 shadow-xl">
-          <h3 className="font-bold text-slate-100 text-sm">Recovery Rate by Failure Reason</h3>
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4 shadow-sm">
+          <h3 className="font-extrabold text-slate-900 text-sm">Recovery Rate by Failure Reason</h3>
           
           <div className="space-y-3 text-xs">
             {(data?.recovery_by_failure_reason || []).map((r, idx) => (
-              <div key={idx} className="bg-slate-950 p-3 rounded-xl border border-slate-800 flex justify-between items-center">
+              <div key={idx} className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 flex justify-between items-center">
                 <div>
-                  <div className="font-mono font-bold text-slate-200 capitalize">{r.reason}</div>
-                  <div className="text-[10px] text-slate-400">{r.count} failure cases</div>
+                  <div className="font-mono font-bold text-slate-900 capitalize">{r.reason}</div>
+                  <div className="text-[11px] text-slate-500 font-medium">{r.count} failure cases</div>
                 </div>
                 <div className="text-right">
-                  <div className="font-bold text-sky-400">{r.recovered_rate}%</div>
-                  <div className="text-[10px] text-slate-400">Conversion Rate</div>
+                  <div className="font-extrabold text-blue-700">{r.recovered_rate}%</div>
+                  <div className="text-[10px] text-slate-500 font-semibold">Conversion Rate</div>
                 </div>
               </div>
             ))}
