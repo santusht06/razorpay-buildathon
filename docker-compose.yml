@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  # MongoDB Data Service
+  mongodb:
+    image: mongo:7.0
+    container_name: razorpay_mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: razorpay_recovery_db
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache & Idempotency Lock Service
+  redis:
+    image: redis:7.2-alpine
+    container_name: razorpay_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # FastAPI Backend Core Service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: razorpay_backend
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      PORT: 8000
+      MONGODB_URI: mongodb://mongodb:27017
+      MONGODB_DB_NAME: razorpay_recovery_db
+      REDIS_URL: redis://redis:6379
+      RAZORPAY_KEY_ID: rzp_test_hackathon_demo
+      RAZORPAY_KEY_SECRET: rzp_sec_hackathon_demo_secret
+      RAZORPAY_WEBHOOK_SECRET: whsec_hackathon_demo_secret
+      OPENAI_API_KEY: ""
+      GEMINI_API_KEY: ""
+      MAX_AUTO_RETRIES: 3
+      MAX_AUTO_RECOVERY_AMOUNT: 50000.0
+      HIGH_VALUE_THRESHOLD: 10000.0
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # Nginx + React SaaS Frontend Service
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: razorpay_frontend
+    restart: always
+    ports:
+      - "80:80"
+      - "5173:80"
+    depends_on:
+      - backend
+
+volumes:
+  mongodb_data:

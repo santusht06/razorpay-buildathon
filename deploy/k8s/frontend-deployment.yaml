@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: razorpay-frontend
+  namespace: default
+  labels:
+    app: razorpay-frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: razorpay-frontend
+  template:
+    metadata:
+      labels:
+        app: razorpay-frontend
+    spec:
+      containers:
+        - name: frontend
+          image: ghcr.io/santusht06/razorpay-frontend:latest
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "100m"
+            limits:
+              memory: "128Mi"
+              cpu: "250m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: razorpay-frontend-service
+  namespace: default
+spec:
+  selector:
+    app: razorpay-frontend
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: LoadBalancer
