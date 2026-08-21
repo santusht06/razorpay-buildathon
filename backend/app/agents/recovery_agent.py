@@ -1,5 +1,6 @@
 import logging
 import json
+import asyncio
 from typing import Dict, Any, Optional
 from datetime import datetime, timezone
 import uuid
@@ -76,15 +77,11 @@ class RecoveryAgent:
     @classmethod
     async def _invoke_llm_groq(cls, payment: Dict[str, Any], customer: Dict[str, Any], case: Dict[str, Any], policies: list) -> Optional[Dict[str, Any]]:
         """
-        Executes Groq AI LLM inference using ChatGroq / Groq API.
+        Executes Groq AI LLM inference using AsyncGroq SDK.
         """
         try:
-            from langchain_groq import ChatGroq
-            llm = ChatGroq(
-                groq_api_key=settings.GROQ_API_KEY,
-                model_name=settings.GROQ_MODEL,
-                temperature=0.1
-            )
+            from groq import AsyncGroq
+            client = AsyncGroq(api_key=settings.GROQ_API_KEY)
             
             user_prompt = f"""
             Payment ID: {payment.get('payment_id')}
@@ -100,22 +97,29 @@ class RecoveryAgent:
             {json.dumps(policies, indent=2)}
             """
             
-            response = await llm.ainvoke([
-                {"role": "system", "content": RECOVERY_AGENT_SYSTEM_PROMPT},
-                {"role": "user", "content": user_prompt}
-            ])
+            res = await client.chat.completions.create(
+                model=settings.GROQ_MODEL,
+                messages=[
+                    {"role": "system", "content": RECOVERY_AGENT_SYSTEM_PROMPT},
+                    {"role": "user", "content": user_prompt}
+                ]
+            )
             
-            content = response.content.strip()
-            if content.startswith("```"):
+            content = res.choices[0].message.content.strip()
+            if "```" in content:
                 content = content.split("```")[1]
                 if content.startswith("json"):
                     content = content[4:]
             
             parsed = json.loads(content.strip())
+            rec_action = parsed.get("recommended_action", ActionType.SEND_RECOVERY_EMAIL.value).upper()
+            if rec_action not in ActionType.__members__:
+                rec_action = ActionType.SEND_RECOVERY_EMAIL.value
+
             return {
                 "diagnosis": parsed.get("diagnosis", "temporary_payment_failure"),
                 "recovery_probability": float(parsed.get("recovery_probability", 0.85)),
-                "recommended_action": parsed.get("recommended_action", ActionType.SEND_RECOVERY_EMAIL.value),
+                "recommended_action": rec_action,
                 "reasoning_summary": parsed.get("reasoning_summary", "Groq AI diagnosed payment failure based on merchant policy."),
                 "confidence": float(parsed.get("confidence", 0.94)),
                 "source": f"groq_llm ({settings.GROQ_MODEL})"

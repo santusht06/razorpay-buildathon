@@ -15,9 +15,9 @@ class Settings(BaseSettings):
     RAZORPAY_KEY_SECRET: str = "rzp_sec_hackathon_demo_secret"
     RAZORPAY_WEBHOOK_SECRET: str = "whsec_hackathon_demo_secret"
     
-    # LLM Settings (Groq AI, OpenAI, Gemini)
+    # Groq AI & LLM Settings
     GROQ_API_KEY: str = ""
-    GROQ_MODEL: str = "llama-3.3-70b-versatile"
+    GROQ_MODEL: str = "groq/compound-mini"
     OPENAI_API_KEY: str = ""
     GEMINI_API_KEY: str = ""
     DEFAULT_LLM_MODEL: str = "gpt-4o-mini"
