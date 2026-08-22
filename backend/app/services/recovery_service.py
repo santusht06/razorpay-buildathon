@@ -209,6 +209,12 @@ class RecoveryService:
             {"$set": {"status": "executed", "execution_result": execution_result}}
         )
 
+        # Increment attempt counter so PolicyEngine retry limit works correctly
+        await case_col.update_one(
+            {"case_id": case_id},
+            {"$inc": {"attempt_count": 1}}
+        )
+
         await cls._update_case_status(case_id, RecoveryStatus.RECOVERING)
         await cls._log_audit(case_id, "RECOVERY_ACTION_EXECUTED", "recovery_service", recommended_action_enum.value, "RECOVERING", execution_result)
 

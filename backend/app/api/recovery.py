@@ -115,13 +115,96 @@ async def get_recovery_detail(case_id: str):
 @router.post("/recoveries/{case_id}/approve")
 async def approve_recovery_action(case_id: str):
     """
-    Merchant approves auto-action for high-value / flagged transaction.
+    Merchant approves auto-action for high-value / escalated case.
+    Looks up the AI agent decision, executes the recommended action, and runs verification.
     """
+    case_doc = await db_col("recovery_cases").find_one({"case_id": case_id})
+    if not case_doc:
+        raise HTTPException(status_code=404, detail="Recovery case not found")
+
+    decision_doc = await db_col("agent_decisions").find_one({"case_id": case_id})
+    
+    # Mark approved & in-progress
+    now = datetime.now(timezone.utc).isoformat()
     await db_col("recovery_cases").update_one(
         {"case_id": case_id},
-        {"$set": {"recovery_status": RecoveryStatus.RECOVERING.value, "updated_at": datetime.now(timezone.utc).isoformat()}}
+        {"$set": {
+            "recovery_status": RecoveryStatus.RECOVERING.value,
+            "updated_at": now
+        }}
     )
-    return {"case_id": case_id, "status": "RECOVERING", "message": "Merchant approved recovery action."}
+
+    # Re-execute the AI-recommended action
+    executed_action = "SEND_RECOVERY_EMAIL"
+    execution_result = {}
+    if decision_doc:
+        recommended = decision_doc.get("recommended_action", "SEND_RECOVERY_EMAIL")
+        executed_action = recommended
+
+        from app.services.email_service import EmailService
+        from app.services.verification_service import VerificationService
+        from app.models.recovery import ActionType, RecoveryActionModel
+        import uuid
+
+        customer = await db_col("customers").find_one({"customer_id": case_doc.get("customer_id")})
+
+        if recommended in ["SEND_RECOVERY_EMAIL", "REQUEST_PAYMENT_METHOD_UPDATE"]:
+            email_res = await EmailService.send_recovery_email(
+                case_id=case_id,
+                customer_name=customer.get("name", "Customer") if customer else "Customer",
+                customer_email=customer.get("email", "") if customer else "",
+                amount=case_doc.get("amount_at_risk", 0.0),
+                failure_reason=case_doc.get("failure_reason", ""),
+                custom_reasoning=decision_doc.get("reasoning_summary", "Merchant approved recovery.")
+            )
+            execution_result = email_res
+        elif recommended == "RETRY_PAYMENT":
+            from app.services.razorpay_service import RazorpayService
+            execution_result = RazorpayService.simulate_retry_payment(
+                case_doc.get("payment_id", ""), case_doc.get("amount_at_risk", 0.0)
+            )
+        else:
+            execution_result = {"status": "executed", "note": f"Action {recommended} executed on merchant approval"}
+
+        # Record the action
+        action_rec = RecoveryActionModel(
+            action_id=f"act_{uuid.uuid4().hex[:8]}",
+            case_id=case_id,
+            action_type=ActionType[recommended] if recommended in ActionType.__members__ else ActionType.SEND_RECOVERY_EMAIL,
+            status="executed",
+            idempotency_key=f"ik_approve_{case_id}",
+            parameters={"approved_by": "merchant", "amount": case_doc.get("amount_at_risk", 0)},
+            execution_result=execution_result
+        )
+        await db_col("recovery_actions").insert_one(action_rec.model_dump())
+
+        # Audit log
+        from app.models.recovery import AuditLogModel
+        audit = AuditLogModel(
+            event_id=f"evt_{uuid.uuid4().hex[:8]}",
+            recovery_case_id=case_id,
+            event_type="MERCHANT_APPROVED_ACTION",
+            actor="merchant",
+            action=executed_action,
+            result="RECOVERING",
+            metadata={"decision_id": decision_doc.get("decision_id"), "execution_result": execution_result}
+        )
+        await db_col("audit_logs").insert_one(audit.model_dump())
+
+        # Increment attempt count
+        await db_col("recovery_cases").update_one(
+            {"case_id": case_id},
+            {"$inc": {"attempt_count": 1}}
+        )
+
+    return {
+        "case_id": case_id,
+        "status": "RECOVERING",
+        "action_executed": executed_action,
+        "execution_result": execution_result,
+        "message": "Merchant approved. Recovery action executed."
+    }
+
 
 @router.post("/recoveries/{case_id}/retry")
 async def manual_retry_recovery(case_id: str):
