@@ -21,28 +21,28 @@ export const Header = ({ onSimulatorSuccess }) => {
 
   return (
     <>
-      <header className="bg-white border-b border-slate-200 text-slate-900 h-16 px-6 flex items-center justify-between sticky top-0 z-50 select-none shadow-xs">
+      <header className="bg-white border-b border-slate-200/80 text-slate-900 h-16 px-8 flex items-center justify-between sticky top-0 z-40 select-none shadow-xs">
         
         {/* Left Section: Razorpay Brand & App Subtitle */}
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-3 shrink-0">
           <div className="flex items-center space-x-1 cursor-pointer">
             <span className="font-black text-2xl italic tracking-tighter text-[#02042B] flex items-center">
               <span className="text-[#0C54EA] font-black mr-0.5 font-sans">/</span>Razorpay
             </span>
           </div>
-          <div className="h-5 w-px bg-slate-200" />
+          <div className="h-4 w-px bg-slate-200" />
           <div className="flex items-center space-x-1.5">
-            <span className="text-xs font-black text-slate-900 tracking-tight">AI Revenue Recovery</span>
-            <span className="bg-blue-50 text-[#0C54EA] border border-blue-200 text-[10px] font-extrabold px-2 py-0.5 rounded-full">
+            <span className="text-xs font-black text-slate-800 tracking-tight">AI Recovery</span>
+            <span className="bg-blue-50 text-[#0C54EA] border border-blue-200/60 text-[10px] font-extrabold px-2 py-0.5 rounded-full">
               Autonomous
             </span>
           </div>
         </div>
 
-        {/* Center: Real Working Hackathon Demo Scenarios */}
-        <div className="hidden lg:flex items-center space-x-2 bg-slate-50 p-1.5 rounded-xl border border-slate-200">
-          <span className="text-[11px] font-extrabold text-[#0C54EA] uppercase tracking-wider flex items-center px-1">
-            <Zap className="w-3.5 h-3.5 mr-1 fill-current text-amber-500" /> Demo Scenarios:
+        {/* Center: Clean Hackathon Test Scenario Chips */}
+        <div className="hidden xl:flex items-center space-x-1.5 bg-slate-50 p-1.5 rounded-xl border border-slate-200">
+          <span className="text-[11px] font-extrabold text-[#0C54EA] uppercase tracking-wider flex items-center px-1.5">
+            <Zap className="w-3.5 h-3.5 mr-1 fill-current text-amber-500" /> Test Scenarios:
           </span>
 
           <button
@@ -51,7 +51,7 @@ export const Header = ({ onSimulatorSuccess }) => {
             className="px-2.5 py-1 text-[11px] font-bold bg-white hover:bg-blue-50 text-slate-800 hover:text-[#0C54EA] rounded-lg border border-slate-200 hover:border-blue-300 transition-colors shadow-2xs disabled:opacity-50"
             title="₹2,499 Subscription Temporary Failure -> AI Email Recovery"
           >
-            {loadingScenario === 'scenario-1' ? 'Executing...' : '1: ₹2.5k Sub'}
+            {loadingScenario === 'scenario-1' ? 'Running...' : '1: ₹2.5k Sub'}
           </button>
 
           <button
@@ -60,7 +60,7 @@ export const Header = ({ onSimulatorSuccess }) => {
             className="px-2.5 py-1 text-[11px] font-bold bg-white hover:bg-blue-50 text-slate-800 hover:text-[#0C54EA] rounded-lg border border-slate-200 hover:border-blue-300 transition-colors shadow-2xs disabled:opacity-50"
             title="₹999 Expired Card -> Payment Method Update Link"
           >
-            {loadingScenario === 'scenario-2' ? 'Executing...' : '2: Expired Card'}
+            {loadingScenario === 'scenario-2' ? 'Running...' : '2: Expired Card'}
           </button>
 
           <button
@@ -69,7 +69,7 @@ export const Header = ({ onSimulatorSuccess }) => {
             className="px-2.5 py-1 text-[11px] font-bold bg-white hover:bg-blue-50 text-slate-800 hover:text-[#0C54EA] rounded-lg border border-slate-200 hover:border-blue-300 transition-colors shadow-2xs disabled:opacity-50"
             title="₹75,000 High-Value Payment -> Safety Guardrail Block & VIP Escalation"
           >
-            {loadingScenario === 'scenario-3' ? 'Executing...' : '3: ₹75k VIP Block'}
+            {loadingScenario === 'scenario-3' ? 'Running...' : '3: ₹75k VIP Block'}
           </button>
 
           <button
@@ -78,26 +78,33 @@ export const Header = ({ onSimulatorSuccess }) => {
             className="px-2.5 py-1 text-[11px] font-bold bg-white hover:bg-blue-50 text-slate-800 hover:text-[#0C54EA] rounded-lg border border-slate-200 hover:border-blue-300 transition-colors shadow-2xs disabled:opacity-50"
             title="₹25,000 Abandoned Checkout -> Contextual Email Recovery"
           >
-            {loadingScenario === 'scenario-4' ? 'Executing...' : '4: Abandoned Cart'}
+            {loadingScenario === 'scenario-4' ? 'Running...' : '4: Abandoned Cart'}
           </button>
         </div>
 
-        {/* Right Section: Webhook Trigger & AI Status */}
-        <div className="flex items-center space-x-3">
+        {/* Right Section: Actions & Avatar */}
+        <div className="flex items-center space-x-3 shrink-0">
+          
           {/* AI Engine Status Badge */}
-          <div className="hidden sm:flex items-center space-x-1.5 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs px-3 py-1.5 rounded-xl font-bold">
+          <div className="hidden sm:flex items-center space-x-1.5 bg-emerald-50/80 border border-emerald-200 text-emerald-800 text-xs px-3 py-1.5 rounded-xl font-extrabold shadow-2xs">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             <span>Groq AI Online</span>
           </div>
 
-          {/* Webhook Simulator Modal Trigger */}
+          {/* Webhook Simulator Primary Button */}
           <button
             onClick={() => setIsSimulatorOpen(true)}
-            className="px-3.5 py-2 bg-[#0C54EA] hover:bg-[#0A47C4] text-white rounded-xl text-xs font-extrabold flex items-center space-x-1.5 shadow-sm transition-all transform hover:scale-102"
+            className="px-4 py-2 bg-[#0C54EA] hover:bg-[#0A47C4] text-white rounded-xl text-xs font-black flex items-center space-x-1.5 shadow-sm transition-all transform hover:scale-102"
           >
             <Zap className="w-3.5 h-3.5 fill-current text-amber-300" />
-            <span>Simulate Webhook</span>
+            <span>Simulate Failure</span>
           </button>
+
+          {/* Merchant Profile Avatar */}
+          <div className="w-8 h-8 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center font-black text-xs text-slate-700 cursor-pointer hover:bg-slate-200 transition-colors shadow-2xs" title="Merchant MID: rzp_prod_9981">
+            SK
+          </div>
+
         </div>
 
       </header>

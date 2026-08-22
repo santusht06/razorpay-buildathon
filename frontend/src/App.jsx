@@ -46,7 +46,7 @@ export default function App() {
       <div className="flex-1 flex flex-col min-w-0">
         <Header onSimulatorSuccess={handleSimulatorSuccess} />
 
-        <main className="flex-1 p-6 md:p-8 max-w-7xl w-full mx-auto space-y-6">
+        <main className="flex-1 px-8 py-6 w-full max-w-[1680px] mx-auto space-y-6">
           {activeTab === 'dashboard' && (
             <Dashboard
               key={refreshTrigger}
