@@ -32,52 +32,54 @@ export default function App() {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#F8FAFC] text-slate-900 font-sans antialiased select-none">
-      {/* Sidebar */}
-      <Sidebar
-        activeTab={activeTab === 'recovery-detail' ? 'recoveries' : activeTab}
-        setActiveTab={(tab) => {
-          setSelectedCaseId(null);
-          setActiveTab(tab);
-        }}
-      />
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans antialiased select-none flex flex-col">
+      {/* 100% Full-Width Top Header Bar */}
+      <Header onSimulatorSuccess={handleSimulatorSuccess} />
 
-      {/* Main Content Workspace */}
-      <div className="flex-1 flex flex-col min-w-0">
-        <Header onSimulatorSuccess={handleSimulatorSuccess} />
+      {/* Main App Workspace: Left Sidebar + Right Content Area */}
+      <div className="flex flex-1 w-full min-h-[calc(100vh-4rem)]">
+        <Sidebar
+          activeTab={activeTab === 'recovery-detail' ? 'recoveries' : activeTab}
+          setActiveTab={(tab) => {
+            setSelectedCaseId(null);
+            setActiveTab(tab);
+          }}
+        />
 
-        <main className="flex-1 px-8 py-6 w-full max-w-[1680px] mx-auto space-y-6">
-          {activeTab === 'dashboard' && (
-            <Dashboard
-              key={refreshTrigger}
-              onSelectCase={handleSelectCase}
-              onOpenSimulator={() => setIsSimulatorOpen(true)}
-            />
-          )}
+        <main className="flex-1 px-8 py-6 w-full overflow-y-auto">
+          <div className="max-w-[1600px] mx-auto space-y-6">
+            {activeTab === 'dashboard' && (
+              <Dashboard
+                key={refreshTrigger}
+                onSelectCase={handleSelectCase}
+                onOpenSimulator={() => setIsSimulatorOpen(true)}
+              />
+            )}
 
-          {activeTab === 'recoveries' && (
-            <RecoveryCases
-              key={refreshTrigger}
-              onSelectCase={handleSelectCase}
-            />
-          )}
+            {activeTab === 'recoveries' && (
+              <RecoveryCases
+                key={refreshTrigger}
+                onSelectCase={handleSelectCase}
+              />
+            )}
 
-          {activeTab === 'recovery-detail' && (
-            <RecoveryDetail
-              caseId={selectedCaseId}
-              onBack={() => setActiveTab('recoveries')}
-            />
-          )}
+            {activeTab === 'recovery-detail' && (
+              <RecoveryDetail
+                caseId={selectedCaseId}
+                onBack={() => setActiveTab('recoveries')}
+              />
+            )}
 
-          {activeTab === 'analytics' && <Analytics key={refreshTrigger} />}
+            {activeTab === 'analytics' && <Analytics key={refreshTrigger} />}
 
-          {activeTab === 'payments' && <Payments key={refreshTrigger} />}
+            {activeTab === 'payments' && <Payments key={refreshTrigger} />}
 
-          {activeTab === 'audit' && <AuditLogs key={refreshTrigger} />}
+            {activeTab === 'audit' && <AuditLogs key={refreshTrigger} />}
 
-          {activeTab === 'evaluation' && <Evaluation />}
+            {activeTab === 'evaluation' && <Evaluation />}
 
-          {activeTab === 'settings' && <Settings />}
+            {activeTab === 'settings' && <Settings />}
+          </div>
         </main>
       </div>
 
