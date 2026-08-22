@@ -36,10 +36,16 @@ class RecoveryService:
 
         payment_id = payment_entity.get("id") or f"pay_{uuid.uuid4().hex[:10]}"
         customer_id = payment_entity.get("customer_id") or payment_entity.get("email") or f"cust_{uuid.uuid4().hex[:8]}"
-        amount_paisa = payment_entity.get("amount", 249900)
-        amount_inr = round(float(amount_paisa) / 100.0 if amount_paisa > 1000 else float(amount_paisa), 2)
         
-        failure_reason = payment_entity.get("error_code") or payment_entity.get("error_reason") or payment_entity.get("reason") or "insufficient_funds"
+        raw_amount = payment_entity.get("amount", 249900)
+        # Razorpay entity.amount is integer paise (e.g., 249900 = ₹2499.0, 7500000 = ₹75000.0)
+        if isinstance(raw_amount, int) and raw_amount >= 100:
+            amount_inr = round(float(raw_amount) / 100.0, 2)
+        else:
+            amount_inr = round(float(raw_amount), 2)
+        
+        # Prioritize specific failure reason over generic error_code (e.g., "card_expired" over "PAYMENT_FAILED")
+        failure_reason = payment_entity.get("error_reason") or payment_entity.get("reason") or payment_entity.get("error_code") or "insufficient_funds"
         customer_email = payment_entity.get("email") or "customer@example.com"
         customer_name = payment_entity.get("notes", {}).get("customer_name") or customer_email.split("@")[0].title()
 
@@ -215,12 +221,20 @@ class RecoveryService:
             {"$inc": {"attempt_count": 1}}
         )
 
-        await cls._update_case_status(case_id, RecoveryStatus.RECOVERING)
-        await cls._log_audit(case_id, "RECOVERY_ACTION_EXECUTED", "recovery_service", recommended_action_enum.value, "RECOVERING", execution_result)
+        # Determine correct post-action status
+        if recommended_action_enum == ActionType.ESCALATE:
+            final_status = RecoveryStatus.ESCALATED
+        elif recommended_action_enum == ActionType.STOP:
+            final_status = RecoveryStatus.STOPPED
+        else:
+            final_status = RecoveryStatus.RECOVERING
+
+        await cls._update_case_status(case_id, final_status)
+        await cls._log_audit(case_id, "RECOVERY_ACTION_EXECUTED", "recovery_service", recommended_action_enum.value, final_status.value, execution_result)
 
         return {
             "case_id": case_id,
-            "status": RecoveryStatus.RECOVERING.value,
+            "status": final_status.value,
             "policy_allowed": True,
             "ai_decision": agent_decision,
             "action_executed": recommended_action_enum.value,

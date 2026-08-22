@@ -158,6 +158,18 @@ async def approve_recovery_action(case_id: str):
                 custom_reasoning=decision_doc.get("reasoning_summary", "Merchant approved recovery.")
             )
             execution_result = email_res
+        elif recommended == "ESCALATE":
+            # When merchant approves an escalated case, dispatch personalized VIP recovery email
+            executed_action = "SEND_RECOVERY_EMAIL"
+            email_res = await EmailService.send_recovery_email(
+                case_id=case_id,
+                customer_name=customer.get("name", "VIP Customer") if customer else "VIP Customer",
+                customer_email=customer.get("email", "") if customer else "",
+                amount=case_doc.get("amount_at_risk", 0.0),
+                failure_reason=case_doc.get("failure_reason", ""),
+                custom_reasoning="Merchant approved high-value transaction recovery."
+            )
+            execution_result = email_res
         elif recommended == "RETRY_PAYMENT":
             from app.services.razorpay_service import RazorpayService
             execution_result = RazorpayService.simulate_retry_payment(

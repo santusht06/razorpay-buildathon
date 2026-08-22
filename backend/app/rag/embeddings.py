@@ -31,7 +31,8 @@ class EmbeddingEngine:
         return self._vectorize_tokens(tokens)
 
     def _tokenize(self, text: str) -> List[str]:
-        tokens = re.findall(r'\w+', text.lower())
+        cleaned = text.lower().replace('_', ' ').replace('-', ' ')
+        tokens = re.findall(r'\w+', cleaned)
         return [t for t in tokens if len(t) > 2]
 
     def _vectorize_tokens(self, tokens: List[str]) -> np.ndarray:

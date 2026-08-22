@@ -201,14 +201,26 @@ class RecoveryAgent:
                 "rag_policies_used": rag_policies
             }
 
-        # High value payment (₹50,000+ or ₹10,000+ VIP)
-        if amount >= 50000.0 or amount >= settings.HIGH_VALUE_THRESHOLD:
+        # Hard guardrail ceiling: ₹50,000+ requires merchant escalation
+        if amount >= 50000.0:
             return {
                 "diagnosis": "high_value_transaction_failure",
                 "recovery_probability": 0.82,
                 "recommended_action": ActionType.ESCALATE.value,
-                "reasoning_summary": f"High-value transaction (₹{amount:,.2f}) detected. Escalated for merchant VIP outreach under guardrail policy.",
-                "confidence": 0.94,
+                "reasoning_summary": f"High-value transaction (₹{amount:,.2f}) exceeds ₹50,000 auto-recovery threshold. Escalated for merchant approval.",
+                "confidence": 0.95,
+                "source": "agent_rag_engine",
+                "rag_policies_used": rag_policies
+            }
+
+        # Checkout Abandonment
+        if "abandon" in reason_lower:
+            return {
+                "diagnosis": "checkout_abandonment",
+                "recovery_probability": 0.84,
+                "recommended_action": ActionType.SEND_RECOVERY_EMAIL.value,
+                "reasoning_summary": "Customer reached checkout but did not complete payment. Dispatched cart recovery notification with secure checkout link.",
+                "confidence": 0.92,
                 "source": "agent_rag_engine",
                 "rag_policies_used": rag_policies
             }
