@@ -10,7 +10,6 @@ import { Evaluation } from './pages/Evaluation';
 import { Settings } from './pages/Settings';
 import { Analytics } from './pages/Analytics';
 import { WebhookSimulatorModal } from './components/simulator/WebhookSimulatorModal';
-import { AskRayWidget } from './components/ui/AskRayWidget';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -87,10 +86,6 @@ export default function App() {
         onClose={() => setIsSimulatorOpen(false)}
         onSuccess={handleSimulatorSuccess}
       />
-
-      {/* Official Razorpay Ask RAY AI Copilot Widget */}
-      <AskRayWidget onOpenSimulator={() => setIsSimulatorOpen(true)} />
     </div>
   );
 }
-
