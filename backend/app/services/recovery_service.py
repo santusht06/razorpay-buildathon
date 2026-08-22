@@ -266,7 +266,7 @@ class RecoveryService:
     @classmethod
     async def execute_demo_scenario(cls, scenario: str) -> Dict[str, Any]:
         """
-        Executes one of the 4 mandatory hackathon demo scenarios.
+        Executes one of the 8 rich fintech failure demo scenarios.
         """
         if scenario == "scenario-1":
             # ₹2,499 Subscription temporary payment failure
@@ -287,7 +287,6 @@ class RecoveryService:
                 }
             }
             res = await cls.process_failed_payment_event(payload, risk_type=RiskType.FAILED_SUBSCRIPTION)
-            # Auto simulate recovery for instant demo delight
             await cls.simulate_customer_payment_recovery(res["case_id"])
             return {"scenario": "Scenario 1 (₹2,499 Subscription Payment Failure)", "result": res, "outcome": "RECOVERED"}
 
@@ -356,7 +355,131 @@ class RecoveryService:
             await cls.simulate_customer_payment_recovery(res["case_id"])
             return {"scenario": "Scenario 4 (₹25,000 Checkout Abandonment)", "result": res, "outcome": "RECOVERED"}
 
+        elif scenario == "scenario-5":
+            # ₹4,999 UPI Auto-Pay Mandate Limit Exceeded / PSP Server Timeout
+            payload = {
+                "event": "payment.failed",
+                "payload": {
+                    "payment": {
+                        "entity": {
+                            "id": f"pay_sc5_{uuid.uuid4().hex[:6]}",
+                            "amount": 499900,
+                            "method": "upi",
+                            "error_code": "UPI_MANDATE_LIMIT_EXCEEDED",
+                            "error_reason": "upi_mandate_exhausted",
+                            "email": "vikram.aditya@example.com",
+                            "notes": {"customer_name": "Vikram Aditya"}
+                        }
+                    }
+                }
+            }
+            res = await cls.process_failed_payment_event(payload, risk_type=RiskType.FAILED_SUBSCRIPTION)
+            await cls.simulate_customer_payment_recovery(res["case_id"])
+            return {"scenario": "Scenario 5 (₹4,999 UPI Auto-Pay Mandate Exhausted)", "result": res, "outcome": "RECOVERED"}
+
+        elif scenario == "scenario-6":
+            # ₹14,500 Cross-Border / International 3D Secure / OTP Drop-off
+            payload = {
+                "event": "payment.failed",
+                "payload": {
+                    "payment": {
+                        "entity": {
+                            "id": f"pay_sc6_{uuid.uuid4().hex[:6]}",
+                            "amount": 1450000,
+                            "method": "card",
+                            "error_code": "AUTH_FAILED",
+                            "error_reason": "authentication_failed",
+                            "email": "sophia.chen@globalcorp.io",
+                            "notes": {"customer_name": "Sophia Chen"}
+                        }
+                    }
+                }
+            }
+            res = await cls.process_failed_payment_event(payload, risk_type=RiskType.FAILED_PAYMENT)
+            await cls.simulate_customer_payment_recovery(res["case_id"])
+            return {"scenario": "Scenario 6 (₹14,500 3DS / OTP Authentication Timeout)", "result": res, "outcome": "RECOVERED"}
+
+        elif scenario == "scenario-7":
+            # ₹8,200 Transient Bank Gateway Outage (HDFC / SBI Network Downtime)
+            payload = {
+                "event": "payment.failed",
+                "payload": {
+                    "payment": {
+                        "entity": {
+                            "id": f"pay_sc7_{uuid.uuid4().hex[:6]}",
+                            "amount": 820000,
+                            "method": "netbanking",
+                            "error_code": "GATEWAY_TIMEOUT",
+                            "error_reason": "bank_outage",
+                            "email": "kavita.nair@example.com",
+                            "notes": {"customer_name": "Kavita Nair"}
+                        }
+                    }
+                }
+            }
+            res = await cls.process_failed_payment_event(payload, risk_type=RiskType.FAILED_PAYMENT)
+            return {"scenario": "Scenario 7 (₹8,200 Bank Gateway Outage -> Smart Retry)", "result": res, "outcome": "SCHEDULED"}
+
+        elif scenario == "scenario-8":
+            # ₹1,200 Terminal Stolen Card / Fraud Risk Block
+            payload = {
+                "event": "payment.failed",
+                "payload": {
+                    "payment": {
+                        "entity": {
+                            "id": f"pay_sc8_{uuid.uuid4().hex[:6]}",
+                            "amount": 120000,
+                            "method": "card",
+                            "error_code": "FRAUD_SUSPECTED",
+                            "error_reason": "stolen_card",
+                            "email": "unknown.actor@malicious.org",
+                            "notes": {"customer_name": "Suspicious Entity"}
+                        }
+                    }
+                }
+            }
+            res = await cls.process_failed_payment_event(payload, risk_type=RiskType.FAILED_PAYMENT)
+            return {"scenario": "Scenario 8 (₹1,200 Stolen Card Security Hard Stop)", "result": res, "outcome": "STOPPED"}
+
         return {"error": f"Unknown scenario: {scenario}"}
+
+    @classmethod
+    async def create_dynamic_payment_failure(
+        cls,
+        amount: float,
+        failure_reason: str,
+        customer_name: str,
+        customer_email: str,
+        payment_method: str = "card",
+        risk_type: RiskType = RiskType.FAILED_PAYMENT,
+        auto_recover: bool = False
+    ) -> Dict[str, Any]:
+        """
+        Dynamically executes recovery loop for arbitrary custom parameters.
+        """
+        payment_id = f"pay_dyn_{uuid.uuid4().hex[:8]}"
+        payload = {
+            "event": "payment.failed",
+            "payload": {
+                "payment": {
+                    "entity": {
+                        "id": payment_id,
+                        "amount": int(amount * 100) if amount < 100000 else int(amount),
+                        "currency": "INR",
+                        "status": "failed",
+                        "method": payment_method,
+                        "error_code": "PAYMENT_FAILED",
+                        "error_reason": failure_reason,
+                        "email": customer_email,
+                        "notes": {"customer_name": customer_name}
+                    }
+                }
+            }
+        }
+        res = await cls.process_failed_payment_event(payload, risk_type=risk_type)
+        if auto_recover and res.get("case_id") and res.get("status") not in ["ESCALATED", "STOPPED"]:
+            await cls.simulate_customer_payment_recovery(res["case_id"])
+        return res
 
     @classmethod
     async def get_dashboard_metrics(cls) -> Dict[str, Any]:

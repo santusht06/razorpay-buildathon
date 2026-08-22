@@ -29,6 +29,8 @@ class SimulateFailureRequest(BaseModel):
     customer_name: str = "Priya Sharma"
     customer_email: str = "priya.sharma@example.com"
     payment_method: str = "card"
+    risk_type: str = "FAILED_SUBSCRIPTION"
+    auto_recover: bool = True
     notes: Optional[Dict[str, Any]] = None
 
 @router.get("")
@@ -42,31 +44,23 @@ async def simulate_payment_failure(req: SimulateFailureRequest):
     """
     Simulator endpoint to trigger synthetic Razorpay payment failures directly from Dashboard!
     """
-    payment_id = f"pay_sim_{uuid.uuid4().hex[:8]}"
-    payload = {
-        "event": "payment.failed",
-        "payload": {
-            "payment": {
-                "entity": {
-                    "id": payment_id,
-                    "amount": req.amount,
-                    "currency": "INR",
-                    "status": "failed",
-                    "order_id": f"order_{uuid.uuid4().hex[:8]}",
-                    "method": req.payment_method,
-                    "error_code": "PAYMENT_FAILED",
-                    "error_reason": req.failure_reason,
-                    "error_description": f"Simulated failure: {req.failure_reason}",
-                    "email": req.customer_email,
-                    "notes": {"customer_name": req.customer_name}
-                }
-            }
-        }
-    }
+    from app.models.recovery import RiskType
     
-    result = await RecoveryService.process_failed_payment_event(payload)
+    risk_enum = RiskType.FAILED_PAYMENT
+    if req.risk_type in RiskType.__members__:
+        risk_enum = RiskType[req.risk_type]
+
+    result = await RecoveryService.create_dynamic_payment_failure(
+        amount=req.amount,
+        failure_reason=req.failure_reason,
+        customer_name=req.customer_name,
+        customer_email=req.customer_email,
+        payment_method=req.payment_method,
+        risk_type=risk_enum,
+        auto_recover=req.auto_recover
+    )
+
     return {
         "status": "success",
-        "simulated_payment_id": payment_id,
         "recovery_pipeline_result": result
     }

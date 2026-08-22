@@ -40,9 +40,9 @@ export const Header = ({ onSimulatorSuccess }) => {
         </div>
 
         {/* Center: Live Test Scenarios Bar */}
-        <div className="hidden lg:flex items-center space-x-2 bg-slate-50 p-1.5 rounded-xl border border-slate-200">
+        <div className="hidden xl:flex items-center space-x-1.5 bg-slate-50 p-1.5 rounded-xl border border-slate-200">
           <span className="text-[11px] font-black text-[#0C54EA] uppercase tracking-wider flex items-center px-1.5">
-            <Zap className="w-3.5 h-3.5 mr-1 fill-current text-amber-500" /> Test Scenarios:
+            <Zap className="w-3.5 h-3.5 mr-1 fill-current text-amber-500" /> Scenarios:
           </span>
 
           <button
@@ -51,7 +51,7 @@ export const Header = ({ onSimulatorSuccess }) => {
             className="px-2.5 py-1 text-[11px] font-bold bg-white hover:bg-blue-50 text-slate-800 hover:text-[#0C54EA] rounded-lg border border-slate-200 hover:border-blue-300 transition-colors shadow-2xs disabled:opacity-50"
             title="₹2,499 Subscription Temporary Failure -> AI Email Recovery"
           >
-            {loadingScenario === 'scenario-1' ? 'Executing...' : '1: ₹2.5k Sub'}
+            {loadingScenario === 'scenario-1' ? '...' : '1: ₹2.5k Sub'}
           </button>
 
           <button
@@ -60,25 +60,61 @@ export const Header = ({ onSimulatorSuccess }) => {
             className="px-2.5 py-1 text-[11px] font-bold bg-white hover:bg-blue-50 text-slate-800 hover:text-[#0C54EA] rounded-lg border border-slate-200 hover:border-blue-300 transition-colors shadow-2xs disabled:opacity-50"
             title="₹999 Expired Card -> Payment Method Update Link"
           >
-            {loadingScenario === 'scenario-2' ? 'Executing...' : '2: Expired Card'}
+            {loadingScenario === 'scenario-2' ? '...' : '2: Expired Card'}
           </button>
 
           <button
             onClick={() => handleRunDemoScenario('scenario-3')}
             disabled={loadingScenario === 'scenario-3'}
-            className="px-2.5 py-1 text-[11px] font-bold bg-white hover:bg-blue-50 text-slate-800 hover:text-[#0C54EA] rounded-lg border border-slate-200 hover:border-blue-300 transition-colors shadow-2xs disabled:opacity-50"
+            className="px-2.5 py-1 text-[11px] font-bold bg-white hover:bg-rose-50 text-rose-800 rounded-lg border border-rose-200 hover:border-rose-300 transition-colors shadow-2xs disabled:opacity-50"
             title="₹75,000 High-Value Payment -> Safety Guardrail Block & VIP Escalation"
           >
-            {loadingScenario === 'scenario-3' ? 'Executing...' : '3: ₹75k VIP Block'}
+            {loadingScenario === 'scenario-3' ? '...' : '3: ₹75k VIP Block'}
           </button>
 
           <button
             onClick={() => handleRunDemoScenario('scenario-4')}
             disabled={loadingScenario === 'scenario-4'}
-            className="px-2.5 py-1 text-[11px] font-bold bg-white hover:bg-blue-50 text-slate-800 hover:text-[#0C54EA] rounded-lg border border-slate-200 hover:border-blue-300 transition-colors shadow-2xs disabled:opacity-50"
-            title="₹25,000 Abandoned Checkout -> Contextual Email Recovery"
+            className="px-2.5 py-1 text-[11px] font-bold bg-white hover:bg-purple-50 text-purple-800 rounded-lg border border-purple-200 hover:border-purple-300 transition-colors shadow-2xs disabled:opacity-50"
+            title="₹25,000 Abandoned Cart -> Contextual Checkout Link"
           >
-            {loadingScenario === 'scenario-4' ? 'Executing...' : '4: Abandoned Cart'}
+            {loadingScenario === 'scenario-4' ? '...' : '4: Cart Dropoff'}
+          </button>
+
+          <button
+            onClick={() => handleRunDemoScenario('scenario-5')}
+            disabled={loadingScenario === 'scenario-5'}
+            className="px-2.5 py-1 text-[11px] font-bold bg-white hover:bg-emerald-50 text-emerald-800 rounded-lg border border-emerald-200 hover:border-emerald-300 transition-colors shadow-2xs disabled:opacity-50"
+            title="₹4,999 UPI Auto-Pay Mandate Limit Exhausted -> UPI Intent Trigger"
+          >
+            {loadingScenario === 'scenario-5' ? '...' : '5: UPI Mandate'}
+          </button>
+
+          <button
+            onClick={() => handleRunDemoScenario('scenario-6')}
+            disabled={loadingScenario === 'scenario-6'}
+            className="px-2.5 py-1 text-[11px] font-bold bg-white hover:bg-blue-50 text-slate-800 hover:text-[#0C54EA] rounded-lg border border-slate-200 hover:border-blue-300 transition-colors shadow-2xs disabled:opacity-50"
+            title="₹14,500 Cross-Border 3DS OTP Timeout -> Multi-Currency Checkout Link"
+          >
+            {loadingScenario === 'scenario-6' ? '...' : '6: 3DS Timeout'}
+          </button>
+
+          <button
+            onClick={() => handleRunDemoScenario('scenario-7')}
+            disabled={loadingScenario === 'scenario-7'}
+            className="px-2.5 py-1 text-[11px] font-bold bg-white hover:bg-amber-50 text-amber-800 rounded-lg border border-amber-200 hover:border-amber-300 transition-colors shadow-2xs disabled:opacity-50"
+            title="₹8,200 Bank Gateway Outage -> Smart 4h Exponential Backoff"
+          >
+            {loadingScenario === 'scenario-7' ? '...' : '7: Bank Outage'}
+          </button>
+
+          <button
+            onClick={() => handleRunDemoScenario('scenario-8')}
+            disabled={loadingScenario === 'scenario-8'}
+            className="px-2.5 py-1 text-[11px] font-bold bg-white hover:bg-slate-100 text-slate-600 rounded-lg border border-slate-300 transition-colors shadow-2xs disabled:opacity-50"
+            title="₹1,200 Terminal Stolen Card -> Guardrail Hard Stop"
+          >
+            {loadingScenario === 'scenario-8' ? '...' : '8: Fraud Stop'}
           </button>
         </div>
 
