@@ -364,36 +364,61 @@ export const RecoveryDetail = ({ caseId, onBack }) => {
       )}
 
       {/* ── Case Header Banner ── */}
-      <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-5 text-xs">
-          <div>
-            <div className="text-slate-500 font-semibold uppercase tracking-wider mb-1">Case ID</div>
-            <div className="font-mono font-extrabold text-slate-900">{c.case_id}</div>
-            <div className="text-slate-400 font-mono text-[10px] mt-0.5">{c.payment_id}</div>
-          </div>
-          <div>
-            <div className="text-slate-500 font-semibold uppercase tracking-wider mb-1">Risk Type</div>
-            <span className="px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200 font-mono font-bold text-[11px]">
-              {c.risk_type || 'FAILED_PAYMENT'}
-            </span>
-          </div>
-          <div>
-            <div className="text-slate-500 font-semibold uppercase tracking-wider mb-1">Amount at Risk</div>
-            <div className="text-2xl font-black text-slate-900">₹{(c.amount_at_risk || 0).toLocaleString('en-IN')}</div>
-          </div>
-          <div>
-            <div className="text-slate-500 font-semibold uppercase tracking-wider mb-1">Customer</div>
-            <div className="font-bold text-slate-900">{customer?.name || 'Customer'}</div>
-            <div className="text-slate-500 text-[11px]">{customer?.email}</div>
-          </div>
-          <div>
-            <div className="text-slate-500 font-semibold uppercase tracking-wider mb-1">Recovery Prob.</div>
-            <div className="text-2xl font-black text-emerald-600">
-              {Math.round((c.recovery_probability || 0.8) * 100)}%
+      <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+        {/* Autonomy level band */}
+        {(() => {
+          const s = (c.status || '').toLowerCase();
+          const a = c.amount_at_risk || 0;
+          const level = s === 'escalated' ? 3 : (s === 'recovered' && a < 50000) ? 1 : (['recovering','recovery_planned','action_executed'].includes(s) ? 2 : null);
+          const bands = {
+            1: 'bg-emerald-600 text-white',
+            2: 'bg-amber-500 text-white',
+            3: 'bg-rose-600 text-white',
+          };
+          const labels = {
+            1: '🟢 Level 1 — Fully Autonomous · Agent detected, decided, executed & verified without any merchant intervention',
+            2: '🟡 Level 2 — Auto-Communication · Agent automatically contacted customer; merchant not involved',
+            3: '🔴 Level 3 — Merchant Approval Required · High-value guardrail blocked automatic execution',
+          };
+          return level ? (
+            <div className={`px-5 py-2 text-[11px] font-black tracking-wide ${bands[level]}`}>
+              {labels[level]}
+            </div>
+          ) : null;
+        })()}
+
+        <div className="p-5">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-5 text-xs">
+            <div>
+              <div className="text-slate-500 font-semibold uppercase tracking-wider mb-1">Case ID</div>
+              <div className="font-mono font-extrabold text-slate-900">{c.case_id}</div>
+              <div className="text-slate-400 font-mono text-[10px] mt-0.5">{c.payment_id}</div>
+            </div>
+            <div>
+              <div className="text-slate-500 font-semibold uppercase tracking-wider mb-1">Risk Type</div>
+              <span className="px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200 font-mono font-bold text-[11px]">
+                {c.risk_type || 'FAILED_PAYMENT'}
+              </span>
+            </div>
+            <div>
+              <div className="text-slate-500 font-semibold uppercase tracking-wider mb-1">Amount at Risk</div>
+              <div className="text-2xl font-black text-slate-900">₹{(c.amount_at_risk || 0).toLocaleString('en-IN')}</div>
+            </div>
+            <div>
+              <div className="text-slate-500 font-semibold uppercase tracking-wider mb-1">Customer</div>
+              <div className="font-bold text-slate-900">{customer?.name || 'Customer'}</div>
+              <div className="text-slate-500 text-[11px]">{customer?.email}</div>
+            </div>
+            <div>
+              <div className="text-slate-500 font-semibold uppercase tracking-wider mb-1">Recovery Prob.</div>
+              <div className="text-2xl font-black text-emerald-600">
+                {Math.round((c.recovery_probability || 0.8) * 100)}%
+              </div>
             </div>
           </div>
         </div>
       </div>
+
 
       {/* ── Main 3-column grid ── */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">

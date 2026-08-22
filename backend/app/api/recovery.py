@@ -165,23 +165,69 @@ async def trigger_demo_scenario(scenario: str = Path(..., description="scenario-
     result = await RecoveryService.execute_demo_scenario(scenario)
     return result
 
-# Analytics
+# Analytics — fully computed from real MongoDB data
 @router.get("/analytics")
 async def get_analytics():
     metrics = await RecoveryService.get_dashboard_metrics()
+
+    # Compute strategy breakdown from real recovery_actions
+    actions_col = db_col("recovery_actions")
+    actions = await actions_col.find({}).to_list(5000)
+    cases_col = db_col("recovery_cases")
+
+    strategy_map = {}
+    for action in actions:
+        atype = action.get("action_type", "UNKNOWN")
+        case_id = action.get("case_id")
+        case = await cases_col.find_one({"case_id": case_id})
+        amount = case.get("amount_at_risk", 0.0) if case else 0.0
+        is_recovered = case and case.get("recovery_status") == "RECOVERED"
+        if atype not in strategy_map:
+            strategy_map[atype] = {"count": 0, "recovered_amount": 0.0}
+        strategy_map[atype]["count"] += 1
+        if is_recovered:
+            strategy_map[atype]["recovered_amount"] += amount
+
+    recovery_by_strategy = [
+        {"strategy": k, "count": v["count"], "recovered_amount": round(v["recovered_amount"], 2)}
+        for k, v in sorted(strategy_map.items(), key=lambda x: -x[1]["recovered_amount"])
+    ]
+
+    # Compute failure reason breakdown from real recovery_cases
+    all_cases = await cases_col.find({}).to_list(5000)
+    reason_map = {}
+    for c in all_cases:
+        reason = c.get("failure_reason", "unknown")
+        is_recovered = c.get("recovery_status") == "RECOVERED"
+        if reason not in reason_map:
+            reason_map[reason] = {"count": 0, "recovered": 0}
+        reason_map[reason]["count"] += 1
+        if is_recovered:
+            reason_map[reason]["recovered"] += 1
+
+    recovery_by_failure_reason = [
+        {
+            "reason": k,
+            "count": v["count"],
+            "recovered_rate": round((v["recovered"] / max(1, v["count"])) * 100, 1)
+        }
+        for k, v in sorted(reason_map.items(), key=lambda x: -x[1]["count"])
+    ]
+
+    # Compute autonomy level breakdown
+    level1 = len([c for c in all_cases if c.get("recovery_status") == "RECOVERED" and c.get("amount_at_risk", 0) < 50000])
+    level2 = len([c for c in all_cases if c.get("recovery_status") == "RECOVERING"])
+    level3 = len([c for c in all_cases if c.get("recovery_status") == "ESCALATED"])
+
     return {
         "summary": metrics,
-        "recovery_by_strategy": [
-            {"strategy": "SEND_RECOVERY_EMAIL", "count": 14, "recovered_amount": 34986.0},
-            {"strategy": "REQUEST_PAYMENT_METHOD_UPDATE", "count": 8, "recovered_amount": 7992.0},
-            {"strategy": "SCHEDULE_RETRY", "count": 5, "recovered_amount": 12495.0},
-        ],
-        "recovery_by_failure_reason": [
-            {"reason": "insufficient_funds", "count": 18, "recovered_rate": 84.5},
-            {"reason": "card_expired", "count": 10, "recovered_rate": 78.0},
-            {"reason": "bank_outage", "count": 6, "recovered_rate": 92.0},
-            {"reason": "fraud_blocked", "count": 3, "recovered_rate": 0.0}
-        ]
+        "recovery_by_strategy": recovery_by_strategy,
+        "recovery_by_failure_reason": recovery_by_failure_reason,
+        "autonomy_breakdown": {
+            "level1_auto_recovered": level1,
+            "level2_auto_communication": level2,
+            "level3_merchant_approval": level3
+        }
     }
 
 # Audit Logs Stream

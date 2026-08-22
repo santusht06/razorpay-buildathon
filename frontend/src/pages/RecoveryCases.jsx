@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, ArrowUpRight, RotateCcw, CheckCircle2, AlertTriangle, ShieldCheck } from 'lucide-react';
-import { StatusBadge } from '../components/ui/StatusBadge';
+import { Search, Filter, ArrowUpRight } from 'lucide-react';
+import { StatusBadge, AutonomyBadge } from '../components/ui/StatusBadge';
 import { api } from '../api';
 
 export const RecoveryCases = ({ onSelectCase }) => {
@@ -91,7 +91,8 @@ export const RecoveryCases = ({ onSelectCase }) => {
                 <th className="py-4 px-6">Customer</th>
                 <th className="py-4 px-6">Amount at Risk</th>
                 <th className="py-4 px-6">Failure Reason</th>
-                <th className="py-4 px-6">Recovery Probability</th>
+                <th className="py-4 px-6">Recovery Prob.</th>
+                <th className="py-4 px-6">Autonomy</th>
                 <th className="py-4 px-6">Status</th>
                 <th className="py-4 px-6 text-right">Action</th>
               </tr>
@@ -125,8 +126,8 @@ export const RecoveryCases = ({ onSelectCase }) => {
                       </span>
                     </td>
                     <td className="py-4 px-6">
-                      <div className="flex items-center space-x-2.5">
-                        <div className="w-20 bg-slate-100 h-2 rounded-full overflow-hidden">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-16 bg-slate-100 h-1.5 rounded-full overflow-hidden">
                           <div
                             className="bg-emerald-500 h-full rounded-full"
                             style={{ width: `${Math.round((item.recovery_probability || 0.8) * 100)}%` }}
@@ -138,6 +139,9 @@ export const RecoveryCases = ({ onSelectCase }) => {
                       </div>
                     </td>
                     <td className="py-4 px-6">
+                      <AutonomyBadge caseItem={item} />
+                    </td>
+                    <td className="py-4 px-6">
                       <StatusBadge status={item.status} />
                     </td>
                     <td className="py-4 px-6 text-right">
@@ -145,7 +149,7 @@ export const RecoveryCases = ({ onSelectCase }) => {
                         onClick={() => onSelectCase(item.case_id)}
                         className="px-3.5 py-1.5 bg-blue-50 hover:bg-blue-100 text-[#0C54EA] rounded-xl text-xs font-extrabold inline-flex items-center space-x-1 border border-blue-200 transition-colors shadow-2xs"
                       >
-                        <span>View Details</span>
+                        <span>View</span>
                         <ArrowUpRight className="w-3.5 h-3.5" />
                       </button>
                     </td>
