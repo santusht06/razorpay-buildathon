@@ -54,14 +54,14 @@ export const RecoveryDetail = ({ caseId, onBack }) => {
   };
 
   if (loading) {
-    return <div className="py-12 text-center text-slate-500 font-medium">Loading case details...</div>;
+    return <div className="py-12 text-center text-slate-500 font-semibold">Loading case details...</div>;
   }
 
   if (!detail || !detail.case) {
     return (
       <div className="py-12 text-center text-slate-500 space-y-4">
         <div>Case not found.</div>
-        <button onClick={onBack} className="px-4 py-2 bg-slate-100 text-slate-800 rounded-lg text-xs font-bold border border-slate-200">
+        <button onClick={onBack} className="px-4 py-2 bg-slate-100 text-slate-800 rounded-xl text-xs font-bold border border-slate-200">
           Back to list
         </button>
       </div>
@@ -72,12 +72,12 @@ export const RecoveryDetail = ({ caseId, onBack }) => {
   const isRecovered = (c.status === 'RECOVERED' || c.status === 'recovered');
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-12">
       {/* Navigation Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <button
           onClick={onBack}
-          className="inline-flex items-center space-x-2 text-xs font-bold text-slate-700 hover:text-slate-900 bg-white border border-slate-200 px-3.5 py-2 rounded-xl transition-colors shadow-xs"
+          className="inline-flex items-center space-x-2 text-xs font-extrabold text-[#0C54EA] hover:text-blue-800 bg-white border border-slate-200 px-4 py-2 rounded-xl transition-colors shadow-2xs"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Back to Recovery Cases</span>
@@ -89,7 +89,7 @@ export const RecoveryDetail = ({ caseId, onBack }) => {
             <button
               onClick={handleSimulateRecovery}
               disabled={recovering}
-              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md shadow-emerald-600/20 flex items-center space-x-2 transition-all disabled:opacity-50"
+              className="rzp-btn-primary text-xs flex items-center space-x-2 shadow-md disabled:opacity-50"
             >
               <CheckCircle2 className="w-4 h-4" />
               <span>{recovering ? 'Verifying Outcome...' : 'Simulate Customer Payment Checkout'}</span>
@@ -99,7 +99,7 @@ export const RecoveryDetail = ({ caseId, onBack }) => {
       </div>
 
       {actionMessage && (
-        <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold flex items-center justify-between shadow-xs">
+        <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-extrabold flex items-center justify-between shadow-2xs">
           <div className="flex items-center space-x-2">
             <CheckCircle2 className="w-4 h-4 text-emerald-600" />
             <span>{actionMessage}</span>
@@ -108,38 +108,38 @@ export const RecoveryDetail = ({ caseId, onBack }) => {
       )}
 
       {/* Case Overview Banner */}
-      <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm grid grid-cols-1 md:grid-cols-5 gap-6">
+      <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs grid grid-cols-1 md:grid-cols-5 gap-6">
         <div>
-          <div className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Case Reference</div>
-          <div className="text-lg font-extrabold text-slate-900 font-mono mt-0.5">{c.case_id}</div>
+          <div className="text-[11px] text-slate-500 font-extrabold uppercase tracking-wider">Case Reference</div>
+          <div className="text-lg font-black text-[#02042B] font-mono mt-0.5">{c.case_id}</div>
           <div className="text-[11px] text-slate-500 mt-1 font-mono">Payment: {c.payment_id || 'N/A'}</div>
         </div>
 
         <div>
-          <div className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Risk Type</div>
-          <span className="inline-block mt-1 px-2.5 py-0.5 rounded-md text-xs font-mono font-bold bg-blue-50 text-blue-700 border border-blue-200">
+          <div className="text-[11px] text-slate-500 font-extrabold uppercase tracking-wider">Risk Type</div>
+          <span className="inline-block mt-1 px-2.5 py-0.5 rounded-md text-xs font-mono font-extrabold bg-blue-50 text-[#0C54EA] border border-blue-200">
             {c.risk_type || 'FAILED_PAYMENT'}
           </span>
         </div>
 
         <div>
-          <div className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Amount at Risk</div>
-          <div className="text-2xl font-extrabold text-slate-900 mt-0.5">₹{c.amount_at_risk?.toLocaleString('en-IN')}</div>
+          <div className="text-[11px] text-slate-500 font-extrabold uppercase tracking-wider">Amount at Risk</div>
+          <div className="text-2xl font-black text-[#02042B] mt-0.5">₹{c.amount_at_risk?.toLocaleString('en-IN')}</div>
           <div className="text-[11px] text-slate-500 mt-1 font-semibold">Currency: INR</div>
         </div>
 
         <div>
-          <div className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Customer Profile</div>
+          <div className="text-[11px] text-slate-500 font-extrabold uppercase tracking-wider">Customer Profile</div>
           <div className="text-sm font-bold text-slate-900 mt-0.5">{customer?.name || 'Customer'}</div>
           <div className="text-xs text-slate-500 truncate">{customer?.email || 'N/A'}</div>
         </div>
 
         <div>
-          <div className="text-xs text-slate-500 font-semibold uppercase tracking-wider">AI Recovery Prob</div>
-          <div className="text-2xl font-extrabold text-emerald-600 mt-0.5">
+          <div className="text-[11px] text-slate-500 font-extrabold uppercase tracking-wider">AI Recovery Prob</div>
+          <div className="text-2xl font-black text-emerald-600 mt-0.5">
             {Math.round((c.recovery_probability || 0.85) * 100)}%
           </div>
-          <div className="text-[11px] text-slate-500 mt-1 font-medium">Strategy: {c.selected_strategy || 'Active'}</div>
+          <div className="text-[11px] text-slate-500 mt-1 font-semibold">Strategy: {c.selected_strategy || 'Active'}</div>
         </div>
       </div>
 
@@ -149,7 +149,7 @@ export const RecoveryDetail = ({ caseId, onBack }) => {
         {/* Left Column */}
         <div className="space-y-6">
           {/* Groq AI Agent Decision Panel */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-4">
+          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-4">
             <div className="flex items-center space-x-2 text-purple-700 font-extrabold text-xs uppercase tracking-wider">
               <Cpu className="w-4 h-4 text-purple-600" />
               <span>Groq AI Decision Panel</span>
@@ -170,23 +170,23 @@ export const RecoveryDetail = ({ caseId, onBack }) => {
                 </div>
 
                 <div className="grid grid-cols-2 gap-2 pt-1 text-[11px]">
-                  <div className="bg-purple-50/50 p-2.5 rounded-lg border border-purple-100">
-                    <span className="text-purple-700 font-semibold block text-[10px]">Recommended Action:</span>
-                    <span className="font-extrabold text-purple-900">{agent_decision.recommended_action}</span>
+                  <div className="bg-purple-50/60 p-2.5 rounded-xl border border-purple-100">
+                    <span className="text-purple-700 font-extrabold block text-[10px]">Recommended Action:</span>
+                    <span className="font-black text-purple-900">{agent_decision.recommended_action}</span>
                   </div>
-                  <div className="bg-emerald-50/50 p-2.5 rounded-lg border border-emerald-100">
-                    <span className="text-emerald-700 font-semibold block text-[10px]">Confidence Score:</span>
-                    <span className="font-extrabold text-emerald-900">{Math.round((agent_decision.confidence || 0.9) * 100)}%</span>
+                  <div className="bg-emerald-50/60 p-2.5 rounded-xl border border-emerald-100">
+                    <span className="text-emerald-700 font-extrabold block text-[10px]">Confidence Score:</span>
+                    <span className="font-black text-emerald-900">{Math.round((agent_decision.confidence || 0.9) * 100)}%</span>
                   </div>
                 </div>
               </div>
             ) : (
-              <div className="text-slate-500 text-xs font-medium">Analyzing revenue risk payload...</div>
+              <div className="text-slate-500 text-xs font-semibold">Analyzing revenue risk payload...</div>
             )}
           </div>
 
           {/* Policy Guardrail Engine Panel */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-3">
+          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-3">
             <div className="flex items-center space-x-2 text-amber-700 font-extrabold text-xs uppercase tracking-wider">
               <ShieldCheck className="w-4 h-4 text-amber-600" />
               <span>Policy & Guardrail Engine</span>
@@ -200,7 +200,7 @@ export const RecoveryDetail = ({ caseId, onBack }) => {
                     {agent_decision.policy_result.allowed ? 'Automatic Recovery Permitted' : 'Blocked by Guardrail Rule'}
                   </span>
                 </div>
-                <p className="text-slate-700 text-[11px] bg-slate-50 p-2.5 rounded-lg border border-slate-200 font-mono">
+                <p className="text-slate-700 text-[11px] bg-slate-50 p-2.5 rounded-xl border border-slate-200 font-mono">
                   {agent_decision.policy_result.reason}
                 </p>
               </div>
@@ -215,33 +215,33 @@ export const RecoveryDetail = ({ caseId, onBack }) => {
 
           {/* Merchant Manual Override Controls */}
           {!isRecovered && (
-            <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-3">
+            <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-3">
               <div className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">Merchant Manual Controls</div>
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <button
                   onClick={() => handleManualAction(api.approveCase, 'Approve')}
-                  className="px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 rounded-lg font-bold flex items-center justify-center space-x-1 border border-emerald-200 transition-colors"
+                  className="px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 rounded-xl font-bold flex items-center justify-center space-x-1 border border-emerald-200 transition-colors"
                 >
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                   <span>Approve Action</span>
                 </button>
                 <button
                   onClick={() => handleManualAction(api.retryCase, 'Force Retry')}
-                  className="px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-800 rounded-lg font-bold flex items-center justify-center space-x-1 border border-blue-200 transition-colors"
+                  className="px-3 py-2 bg-blue-50 hover:bg-blue-100 text-[#0C54EA] rounded-xl font-bold flex items-center justify-center space-x-1 border border-blue-200 transition-colors"
                 >
-                  <Play className="w-3.5 h-3.5 text-blue-600" />
+                  <Play className="w-3.5 h-3.5 text-[#0C54EA]" />
                   <span>Force Retry</span>
                 </button>
                 <button
                   onClick={() => handleManualAction(api.escalateCase, 'Escalate')}
-                  className="px-3 py-2 bg-amber-50 hover:bg-amber-100 text-amber-800 rounded-lg font-bold flex items-center justify-center space-x-1 border border-amber-200 transition-colors"
+                  className="px-3 py-2 bg-amber-50 hover:bg-amber-100 text-amber-800 rounded-xl font-bold flex items-center justify-center space-x-1 border border-amber-200 transition-colors"
                 >
                   <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
                   <span>Escalate VIP</span>
                 </button>
                 <button
                   onClick={() => handleManualAction(api.stopCase, 'Stop')}
-                  className="px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-800 rounded-lg font-bold flex items-center justify-center space-x-1 border border-rose-200 transition-colors"
+                  className="px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-800 rounded-xl font-bold flex items-center justify-center space-x-1 border border-rose-200 transition-colors"
                 >
                   <XCircle className="w-3.5 h-3.5 text-rose-600" />
                   <span>Stop Case</span>
@@ -253,10 +253,10 @@ export const RecoveryDetail = ({ caseId, onBack }) => {
 
         {/* Right Column */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
-            <h3 className="font-extrabold text-slate-900 text-sm mb-4 flex items-center justify-between">
+          <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs">
+            <h3 className="font-black text-[#02042B] text-sm mb-4 flex items-center justify-between">
               <span>Complete Lifecycle Audit Timeline</span>
-              <span className="text-xs font-semibold text-slate-500">{audit_logs?.length || 0} events logged</span>
+              <span className="text-xs font-bold text-slate-500">{audit_logs?.length || 0} events logged</span>
             </h3>
 
             <AuditTimeline
@@ -271,3 +271,4 @@ export const RecoveryDetail = ({ caseId, onBack }) => {
     </div>
   );
 };
+

@@ -14,56 +14,56 @@ export const Settings = () => {
   };
 
   return (
-    <div className="space-y-6 max-w-4xl">
+    <div className="space-y-6 max-w-4xl pb-12">
       <div>
-        <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Policy Engine & Security Guardrails</h1>
-        <p className="text-xs text-slate-600 mt-1 font-medium">Define deterministic parameters and safety limits enforced on all Groq AI Agent recommendations.</p>
+        <h1 className="text-2xl font-black text-[#02042B] tracking-tight">Policy Engine & Security Guardrails</h1>
+        <p className="text-xs text-slate-600 mt-1 font-semibold">Define deterministic parameters and safety limits enforced on all Groq AI Agent recommendations.</p>
       </div>
 
       {saved && (
-        <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold flex items-center space-x-2 shadow-xs">
+        <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-extrabold flex items-center space-x-2 shadow-2xs">
           <CheckCircle2 className="w-4 h-4 text-emerald-600" />
           <span>Merchant Guardrail Policies successfully updated!</span>
         </div>
       )}
 
-      <form onSubmit={handleSave} className="bg-white rounded-2xl p-6 border border-slate-200 space-y-6 shadow-sm">
-        <div className="flex items-center space-x-2 text-blue-700 font-extrabold text-xs uppercase tracking-wider border-b border-slate-100 pb-3">
-          <ShieldCheck className="w-4 h-4 text-blue-600" />
+      <form onSubmit={handleSave} className="bg-white rounded-2xl p-6 border border-slate-200 space-y-6 shadow-xs">
+        <div className="flex items-center space-x-2 text-[#0C54EA] font-extrabold text-xs uppercase tracking-wider border-b border-slate-100 pb-3">
+          <ShieldCheck className="w-4 h-4 text-[#0C54EA]" />
           <span>Deterministic Financial Guardrails</span>
         </div>
 
         <div className="space-y-4 text-xs">
           <div>
-            <label className="block text-slate-900 font-bold mb-1">Maximum Automated Retries</label>
-            <p className="text-slate-500 text-[11px] mb-2 font-medium">Maximum number of retries the AI agent can execute automatically before escalating to merchant support.</p>
+            <label className="block text-[#02042B] font-extrabold mb-1">Maximum Automated Retries</label>
+            <p className="text-slate-500 text-[11px] mb-2 font-semibold">Maximum number of retries the AI agent can execute automatically before escalating to merchant support.</p>
             <input
               type="number"
               value={maxRetries}
               onChange={(e) => setMaxRetries(Number(e.target.value))}
-              className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-slate-900 font-bold text-xs w-36 focus:outline-none focus:border-blue-600 focus:bg-white"
+              className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-[#02042B] font-extrabold text-xs w-36 focus:outline-none focus:border-[#0C54EA] focus:bg-white"
             />
           </div>
 
           <div>
-            <label className="block text-slate-900 font-bold mb-1">Maximum Automated Recovery Amount (₹)</label>
-            <p className="text-slate-500 text-[11px] mb-2 font-medium">Transactions exceeding this amount require manual merchant approval before executing automated retries.</p>
+            <label className="block text-[#02042B] font-extrabold mb-1">Maximum Automated Recovery Amount (₹)</label>
+            <p className="text-slate-500 text-[11px] mb-2 font-semibold">Transactions exceeding this amount require manual merchant approval before executing automated retries.</p>
             <input
               type="number"
               value={maxAmount}
               onChange={(e) => setMaxAmount(Number(e.target.value))}
-              className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-slate-900 font-bold text-xs w-48 focus:outline-none focus:border-blue-600 focus:bg-white"
+              className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-[#02042B] font-extrabold text-xs w-48 focus:outline-none focus:border-[#0C54EA] focus:bg-white"
             />
           </div>
 
           <div>
-            <label className="block text-slate-900 font-bold mb-1">High-Value VIP Threshold (₹)</label>
-            <p className="text-slate-500 text-[11px] mb-2 font-medium">Transactions equal to or exceeding this threshold trigger high-priority merchant account manager alerts.</p>
+            <label className="block text-[#02042B] font-extrabold mb-1">High-Value VIP Threshold (₹)</label>
+            <p className="text-slate-500 text-[11px] mb-2 font-semibold">Transactions equal to or exceeding this threshold trigger high-priority merchant account manager alerts.</p>
             <input
               type="number"
               value={highValueLimit}
               onChange={(e) => setHighValueLimit(Number(e.target.value))}
-              className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-slate-900 font-bold text-xs w-48 focus:outline-none focus:border-blue-600 focus:bg-white"
+              className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-[#02042B] font-extrabold text-xs w-48 focus:outline-none focus:border-[#0C54EA] focus:bg-white"
             />
           </div>
         </div>
@@ -71,7 +71,7 @@ export const Settings = () => {
         <div className="pt-4 border-t border-slate-100 flex justify-end">
           <button
             type="submit"
-            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-md shadow-blue-600/20 flex items-center space-x-1.5 transition-all"
+            className="rzp-btn-primary text-xs flex items-center space-x-1.5 shadow-md"
           >
             <Save className="w-4 h-4" />
             <span>Save Guardrail Policies</span>
@@ -80,23 +80,24 @@ export const Settings = () => {
       </form>
 
       {/* RAG Knowledge Base Preview */}
-      <div className="bg-white rounded-2xl p-6 border border-slate-200 space-y-4 shadow-sm">
+      <div className="bg-white rounded-2xl p-6 border border-slate-200 space-y-4 shadow-xs">
         <div className="flex items-center space-x-2 text-purple-700 font-extrabold text-xs uppercase tracking-wider border-b border-slate-100 pb-3">
           <BookOpen className="w-4 h-4 text-purple-600" />
           <span>Active RAG Vector Playbooks</span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-          <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-1">
-            <div className="font-extrabold text-slate-900">Insufficient Funds Playbook</div>
-            <p className="text-slate-600 text-[11px] font-medium">Dynamic retry delay with customer LTV score verification and personalized checkout links.</p>
+          <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-1">
+            <div className="font-extrabold text-[#02042B]">Insufficient Funds Playbook</div>
+            <p className="text-slate-600 text-[11px] font-semibold">Dynamic retry delay with customer LTV score verification and personalized checkout links.</p>
           </div>
-          <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-1">
-            <div className="font-extrabold text-slate-900">Expired Card Guidance</div>
-            <p className="text-slate-600 text-[11px] font-medium">Strict prohibition on immediate automated retries to avoid gateway penalty fees; requests card update.</p>
+          <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-1">
+            <div className="font-extrabold text-[#02042B]">Expired Card Guidance</div>
+            <p className="text-slate-600 text-[11px] font-semibold">Strict prohibition on immediate automated retries to avoid gateway penalty fees; requests card update.</p>
           </div>
         </div>
       </div>
     </div>
   );
 };
+

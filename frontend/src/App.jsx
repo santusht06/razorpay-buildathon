@@ -10,6 +10,7 @@ import { Evaluation } from './pages/Evaluation';
 import { Settings } from './pages/Settings';
 import { Analytics } from './pages/Analytics';
 import { WebhookSimulatorModal } from './components/simulator/WebhookSimulatorModal';
+import { AskRayWidget } from './components/ui/AskRayWidget';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -32,7 +33,7 @@ export default function App() {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#0b1329] text-slate-100 font-sans antialiased">
+    <div className="flex min-h-screen bg-[#F8FAFC] text-slate-900 font-sans antialiased select-none">
       {/* Sidebar */}
       <Sidebar
         activeTab={activeTab === 'recovery-detail' ? 'recoveries' : activeTab}
@@ -86,6 +87,10 @@ export default function App() {
         onClose={() => setIsSimulatorOpen(false)}
         onSuccess={handleSimulatorSuccess}
       />
+
+      {/* Official Razorpay Ask RAY AI Copilot Widget */}
+      <AskRayWidget onOpenSimulator={() => setIsSimulatorOpen(true)} />
     </div>
   );
 }
+

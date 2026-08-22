@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, Query, Path
 from typing import Optional, Dict, Any
+from bson import ObjectId
 from app.db.mongodb import db_col
 from app.services.recovery_service import RecoveryService
 from app.services.eval_service import EvaluationService
@@ -7,6 +8,28 @@ from app.models.recovery import RecoveryStatus
 from datetime import datetime, timezone
 
 router = APIRouter(prefix="/api/v1", tags=["Recovery Core & Demo"])
+
+
+def _s(doc):
+    """Recursively serialize MongoDB documents: convert ObjectId → str, strip _id, handle datetimes."""
+    if doc is None:
+        return None
+    if isinstance(doc, ObjectId):
+        return str(doc)
+    if isinstance(doc, datetime):
+        return doc.isoformat()
+    if isinstance(doc, list):
+        return [_s(d) for d in doc]
+    if isinstance(doc, dict):
+        out = {}
+        for k, v in doc.items():
+            if k == "_id":
+                continue  # drop Mongo internal _id
+            out[k] = _s(v)
+        return out
+    return doc
+
+
 
 # Dashboard Summary & Metrics
 @router.get("/dashboard/summary")
@@ -36,7 +59,7 @@ async def list_recovery_cases(
     cust_col = db_col("customers")
     enriched = []
     for item in items:
-        item_copy = dict(item)
+        item_copy = _s(dict(item))
         cust = await cust_col.find_one({"customer_id": item.get("customer_id")})
         if cust:
             item_copy["customer_name"] = cust.get("name")
@@ -70,20 +93,21 @@ async def get_recovery_detail(case_id: str):
     # Standardize audit log fields
     standardized_logs = []
     for log in audit_logs:
-        l = dict(log)
+        l = _s(dict(log))
         l["case_id"] = l.get("recovery_case_id") or l.get("case_id")
         l["event"] = l.get("event_type") or l.get("event")
         l["details"] = l.get("metadata") or l.get("details") or {}
         standardized_logs.append(l)
 
-    case_doc["status"] = case_doc.get("recovery_status") or case_doc.get("status") or "AT_RISK"
+    case_copy = _s(dict(case_doc))
+    case_copy["status"] = case_copy.get("recovery_status") or case_copy.get("status") or "AT_RISK"
 
     return {
-        "case": case_doc,
-        "payment": payment,
-        "customer": customer,
-        "agent_decision": decision,
-        "recovery_actions": actions,
+        "case": case_copy,
+        "payment": _s(payment),
+        "customer": _s(customer),
+        "agent_decision": _s(decision),
+        "recovery_actions": _s(actions),
         "audit_logs": standardized_logs
     }
 
@@ -166,7 +190,7 @@ async def get_audit_logs(limit: int = 100):
     logs = await db_col("audit_logs").find({}).sort("timestamp", -1).limit(limit).to_list(limit)
     standardized_logs = []
     for l in logs:
-        log_copy = dict(l)
+        log_copy = _s(dict(l))
         log_copy["log_id"] = log_copy.get("event_id") or log_copy.get("log_id")
         log_copy["case_id"] = log_copy.get("recovery_case_id") or log_copy.get("case_id")
         log_copy["event"] = log_copy.get("event_type") or log_copy.get("event")

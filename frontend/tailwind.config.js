@@ -8,23 +8,25 @@ export default {
     extend: {
       colors: {
         razorpay: {
-          50: '#f0f7ff',
+          blue: '#0C54EA',      // Official Razorpay Royal Blue
+          darkblue: '#02042B',  // Official Razorpay Brand Navy
+          lightblue: '#EDF5FF', // Official Soft Icy Blue Banner
+          sky: '#3395FF',       // Razorpay Sky Accent
+          surface: '#FFFFFF',
+          bg: '#F8FAFC',
+          border: '#E2E8F0',
+          50: '#edf5ff',
           100: '#e0effe',
-          500: '#0066cc',
+          500: '#0c54ea',
           600: '#0052a3',
           700: '#003d7a',
-          navy: '#0c2340',
-          dark: '#0a192f',
-          sky: '#edf5ff',
-          surface: '#ffffff',
-          slate: '#f8fafc',
-          border: '#e2e8f0',
         }
       },
       fontFamily: {
-        sans: ['Inter', 'Mulish', 'Segoe UI', 'system-ui', 'sans-serif'],
+        sans: ['Inter', 'Mulish', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
       }
     },
   },
   plugins: [],
 }
+
