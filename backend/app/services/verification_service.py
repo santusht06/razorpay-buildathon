@@ -60,6 +60,18 @@ class VerificationService:
             )
             await db_col("audit_logs").insert_one(audit_doc.model_dump())
 
+            # Real-time Continuous Learning Feedback Loop
+            from app.services.learning_service import ContinuousLearningEngine
+            case_record = await case_col.find_one({"case_id": case_id})
+            if case_record:
+                await ContinuousLearningEngine.record_recovery_outcome(
+                    case_id=case_id,
+                    failure_reason=case_record.get("failure_reason", "unknown"),
+                    strategy=case_record.get("selected_strategy", "SEND_RECOVERY_EMAIL"),
+                    amount=amount,
+                    outcome="RECOVERED"
+                )
+
             return True, {
                 "verified": True,
                 "status": "captured",

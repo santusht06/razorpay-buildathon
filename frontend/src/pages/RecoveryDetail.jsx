@@ -54,43 +54,78 @@ const WhyThisAction = ({ agentDecision, customer, caseDoc }) => {
   const successPayments = customer?.history_summary?.successful_payments || customer?.successful_payments || '—';
   const failureReason = caseDoc?.failure_reason || '—';
   const diagnosis = (agentDecision.diagnosis || '').replace(/_/g, ' ');
+  const intel = agentDecision?.customer_intelligence || {};
+  const timing = intel?.timing_recommendation || {};
 
   return (
     <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
       <div className="bg-slate-50 px-5 py-3 border-b border-slate-200 flex items-center gap-2">
         <Cpu className="w-4 h-4 text-blue-600" />
-        <span className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">Why This Action?</span>
+        <span className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">Dynamic AI Diagnosis & Intelligence</span>
         <span className="ml-auto text-[10px] font-mono text-slate-400">{agentDecision.source || 'agent'}</span>
       </div>
 
       <div className="p-5 space-y-4 text-xs">
+        {/* Customer Intelligence Badges */}
+        {intel.customer_tier && (
+          <div className="flex items-center gap-2 flex-wrap pb-1">
+            <span className="px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200 text-[10px] font-black uppercase">
+              Tier: {intel.customer_tier.replace(/_/g, ' ')}
+            </span>
+            <span className="px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-200 text-[10px] font-black uppercase">
+              Channel: {(intel.optimal_channel || 'EMAIL').replace(/_/g, ' ')}
+            </span>
+            <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase border ${
+              (intel.churn_risk_score || 0) > 0.4 ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+            }`}>
+              Churn Risk: {Math.round((intel.churn_risk_score || 0.15) * 100)}%
+            </span>
+          </div>
+        )}
+
         {/* Data table */}
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-slate-50 rounded-lg p-3 border border-slate-200">
-            <div className="text-slate-500 font-semibold mb-1">Customer</div>
+            <div className="text-slate-500 font-semibold mb-1">Customer History</div>
             <div className="font-bold text-slate-900">
-              {successPayments !== '—' ? `${successPayments} successful payments` : 'New customer'}
+              {successPayments !== '—' ? `${successPayments} successful txns` : 'New customer'}
+            </div>
+            <div className="text-[10px] text-slate-500 mt-0.5 font-mono">
+              Reliability: {Math.round((intel.reliability_score || 0.85) * 100)}%
             </div>
           </div>
           <div className="bg-slate-50 rounded-lg p-3 border border-slate-200">
-            <div className="text-slate-500 font-semibold mb-1">Failure</div>
-            <div className="font-mono font-bold text-slate-900 capitalize">{failureReason}</div>
+            <div className="text-slate-500 font-semibold mb-1">Failure Reason</div>
+            <div className="font-mono font-bold text-slate-900 capitalize truncate">{failureReason}</div>
+            <div className="text-[10px] text-slate-500 mt-0.5 capitalize truncate">
+              {diagnosis}
+            </div>
           </div>
           <div className="bg-slate-50 rounded-lg p-3 border border-slate-200">
-            <div className="text-slate-500 font-semibold mb-1">Recovery probability</div>
+            <div className="text-slate-500 font-semibold mb-1">Calibrated Recovery Prob.</div>
             <div className={`text-xl font-black ${prob >= 75 ? 'text-emerald-600' : prob >= 50 ? 'text-amber-600' : 'text-rose-600'}`}>
               {prob}%
             </div>
           </div>
           <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
-            <div className="text-blue-600 font-semibold mb-1">Recommended action</div>
+            <div className="text-blue-600 font-semibold mb-1">Recommended Action</div>
             <div className="font-extrabold text-blue-900 capitalize">{action}</div>
           </div>
         </div>
 
+        {/* Dynamic Timing Signal */}
+        {timing.strategy && (
+          <div className="bg-amber-50/70 border border-amber-200 rounded-lg p-3 text-[11px] text-amber-900 font-semibold">
+            <div className="font-bold uppercase tracking-wider text-amber-800 text-[10px] mb-0.5">
+              ⚡ Smart Timing Engine ({timing.strategy.replace(/_/g, ' ')})
+            </div>
+            <div>{timing.reasoning}</div>
+          </div>
+        )}
+
         {/* AI Reasoning */}
         <div className="border-t border-slate-100 pt-3">
-          <div className="text-slate-500 font-semibold mb-1.5">Reason</div>
+          <div className="text-slate-500 font-semibold mb-1.5">Business Explanation</div>
           <p className="text-slate-800 leading-relaxed font-medium">
             {agentDecision.reasoning_summary || 'AI analyzed customer history, failure reason, and merchant policies to determine the optimal recovery action.'}
           </p>
@@ -98,7 +133,7 @@ const WhyThisAction = ({ agentDecision, customer, caseDoc }) => {
 
         {/* Confidence bar */}
         <div className="flex items-center gap-3 pt-1">
-          <span className="text-slate-500 font-semibold shrink-0">AI Confidence</span>
+          <span className="text-slate-500 font-semibold shrink-0">Model Confidence</span>
           <div className="flex-1 bg-slate-100 rounded-full h-1.5 overflow-hidden">
             <div
               className="bg-blue-500 h-full rounded-full transition-all"

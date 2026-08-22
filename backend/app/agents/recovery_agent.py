@@ -7,14 +7,18 @@ import uuid
 
 from app.config import settings
 from app.models.recovery import ActionType
-from app.rag.retriever import policy_retriever
+from app.rag.adaptive_retriever import adaptive_policy_retriever
+from app.services.customer_intelligence import CustomerIntelligenceEngine
+from app.agents.model_router import ModelRouter
 from app.agents.prompts import RECOVERY_AGENT_SYSTEM_PROMPT
 
 logger = logging.getLogger(__name__)
 
 class RecoveryAgent:
     """
-    LangChain AI Recovery Agent with Groq AI integration, RAG vector retrieval, and fallback.
+    Intelligent Adaptive AI Recovery Agent.
+    Orchestrates Customer Behavioral Intelligence, Hybrid Adaptive RAG,
+    Multi-Model LLM Routing, and Bayesian Probability Calibration.
     """
 
     @classmethod
@@ -26,52 +30,49 @@ class RecoveryAgent:
     ) -> Dict[str, Any]:
         """
         Executes AI diagnosis loop:
-        1. Context Retrieval (Payment, Customer, RAG Policies)
-        2. Diagnosis & Strategy Reasoning (Groq AI / OpenAI / Gemini / Heuristic)
-        3. Structured Output Generation
+        1. Dynamic Customer Intelligence & Churn Analysis
+        2. Hybrid Semantic RAG Policy Retrieval
+        3. Multi-Model LLM Routing with Circuit Breaker & Calibration
+        4. High-Precision Heuristic Adaptation Fallback
         """
         failure_reason = payment.get("failure_reason", "unknown")
         amount = payment.get("amount", 0.0)
         payment_method = payment.get("payment_method", "card")
-        
-        customer_name = customer.get("name", "Valued Customer")
-        customer_email = customer.get("email", "")
-        ltv = customer.get("ltv", 0.0)
-        
-        history = customer.get("history_summary", {})
-        reliability_score = history.get("payment_reliability_score", 0.85)
-        successful_payments = history.get("successful_payments", 1)
 
-        # 1. RAG Policy Context Retrieval
-        query = f"{failure_reason} {payment_method} amount {amount}"
-        rag_policies = policy_retriever.retrieve_relevant_policies(query, top_k=2)
+        # 1. Customer Intelligence & Behavioral Segmentation
+        customer_intel = CustomerIntelligenceEngine.analyze_customer(
+            customer=customer,
+            payment=payment,
+            case=case
+        )
 
-        # 2. Try Groq AI Execution if GROQ_API_KEY is configured
-        if settings.GROQ_API_KEY:
-            groq_decision = await cls._invoke_llm_groq(payment, customer, case, rag_policies)
-            if groq_decision:
-                groq_decision["rag_policies_used"] = rag_policies
-                return groq_decision
+        # 2. Hybrid Adaptive RAG Policy Context Retrieval
+        query = f"{failure_reason} {payment_method} amount {amount} tier {customer_intel['customer_tier']}"
+        rag_policies = adaptive_policy_retriever.retrieve_relevant_policies(query, top_k=2)
 
-        # 3. Try OpenAI Execution if OPENAI_API_KEY is configured
-        if settings.OPENAI_API_KEY:
-            openai_decision = await cls._invoke_llm_openai(payment, customer, case, rag_policies)
-            if openai_decision:
-                openai_decision["rag_policies_used"] = rag_policies
-                return openai_decision
+        # 3. Try Multi-Model LLM Routing with Groq/OpenAI Cascading
+        llm_decision = await ModelRouter.invoke_best_llm(
+            payment=payment,
+            customer=customer,
+            customer_intel=customer_intel,
+            policies=rag_policies
+        )
+        if llm_decision:
+            llm_decision["rag_policies_used"] = rag_policies
+            llm_decision["customer_intelligence"] = customer_intel
+            return llm_decision
 
-        # 4. High-Precision Heuristic AI Engine Fallback (Zero external dependency required)
+        # 4. Dynamic Heuristic Adaptation Engine Fallback (Zero external dependency required)
         heuristic_decision = cls._heuristic_reasoning(
             failure_reason=failure_reason,
             amount=amount,
             payment_method=payment_method,
-            ltv=ltv,
-            reliability_score=reliability_score,
-            successful_payments=successful_payments,
+            customer_intel=customer_intel,
+            ltv=customer.get("ltv", 0.0),
             retry_count=case.get("attempt_count", 0),
             rag_policies=rag_policies
         )
-        
+        heuristic_decision["customer_intelligence"] = customer_intel
         return heuristic_decision
 
     @classmethod
@@ -178,16 +179,20 @@ class RecoveryAgent:
         failure_reason: str,
         amount: float,
         payment_method: str,
+        customer_intel: Dict[str, Any],
         ltv: float,
-        reliability_score: float,
-        successful_payments: int,
         retry_count: int,
         rag_policies: list
     ) -> Dict[str, Any]:
         """
-        Deterministic, policy-aligned heuristic decision maker matching merchant RAG playbooks.
+        Deterministic, policy-aligned heuristic decision maker matching merchant RAG playbooks
+        and dynamically adapting to customer intelligence signals.
         """
         reason_lower = failure_reason.lower()
+        reliability_score = customer_intel.get("reliability_score", 0.85)
+        churn_risk = customer_intel.get("churn_risk_score", 0.15)
+        tier = customer_intel.get("customer_tier", "STANDARD")
+        timing = customer_intel.get("timing_recommendation", {})
 
         # Terminal security / fraud block
         if any(term in reason_lower for term in ["stolen", "fraud", "blacklisted", "illegal"]):
@@ -219,7 +224,7 @@ class RecoveryAgent:
                 "diagnosis": "checkout_abandonment",
                 "recovery_probability": 0.84,
                 "recommended_action": ActionType.SEND_RECOVERY_EMAIL.value,
-                "reasoning_summary": "Customer reached checkout but did not complete payment. Dispatched cart recovery notification with secure checkout link.",
+                "reasoning_summary": f"Customer reached checkout but dropped off. Cart recovery link prepared for {tier} customer.",
                 "confidence": 0.92,
                 "source": "agent_rag_engine",
                 "rag_policies_used": rag_policies
@@ -243,20 +248,20 @@ class RecoveryAgent:
                 "diagnosis": "transient_bank_network_outage",
                 "recovery_probability": 0.91,
                 "recommended_action": ActionType.SCHEDULE_RETRY.value,
-                "reasoning_summary": "Transient bank network issue detected. Scheduled automated retry in 4 hours.",
+                "reasoning_summary": f"Transient bank network issue detected. {timing.get('reasoning', 'Scheduled automated retry in 4 hours.')}",
                 "confidence": 0.89,
                 "source": "agent_rag_engine",
                 "rag_policies_used": rag_policies
             }
 
-        # Insufficient funds / Soft failure
+        # Insufficient funds / Soft failure with dynamic churn awareness
         if reliability_score >= 0.7 or ltv > 1000:
-            prob = 0.88 if successful_payments > 2 else 0.75
+            prob = round(min(0.96, max(0.65, 0.80 + (reliability_score * 0.15) - (churn_risk * 0.10))), 2)
             return {
                 "diagnosis": "temporary_insufficient_funds",
                 "recovery_probability": prob,
                 "recommended_action": ActionType.SEND_RECOVERY_EMAIL.value,
-                "reasoning_summary": f"Customer has strong payment reliability score ({reliability_score:.2f}) and active LTV of ₹{ltv:,.2f}. Sending personalized payment retry link.",
+                "reasoning_summary": f"Customer in {tier} tier with reliability score {reliability_score:.2f}. {timing.get('reasoning', 'Sending personalized payment retry link.')}",
                 "confidence": 0.91,
                 "source": "agent_rag_engine",
                 "rag_policies_used": rag_policies
