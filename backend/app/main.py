@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 
 from app.config import settings
 from app.db.mongodb import DatabaseManager
-from app.api import webhooks, payments, recovery
+from app.api import webhooks, payments, recovery, assistant
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
@@ -81,6 +81,7 @@ app.add_middleware(
 app.include_router(webhooks.router)
 app.include_router(payments.router)
 app.include_router(recovery.router)
+app.include_router(assistant.router)
 
 @app.get("/api/v1/health")
 async def health_check():

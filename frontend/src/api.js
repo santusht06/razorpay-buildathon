@@ -35,4 +35,7 @@ export const api = {
 
   // Benchmark Evaluation
   runEvaluation: (count = 1000) => axios.post(`${API_BASE_URL}/recovery/evaluation/run?count=${count}`),
+
+  // RAG Admin Assistant Chatbot
+  chatWithAssistant: (payload) => axios.post(`${API_BASE_URL}/assistant/chat`, payload),
 };

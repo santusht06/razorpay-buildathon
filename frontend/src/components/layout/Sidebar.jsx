@@ -82,6 +82,21 @@ export const Sidebar = ({ activeTab, setActiveTab }) => {
           </div>
 
           <button
+            onClick={() => setActiveTab('copilot')}
+            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-all font-bold ${
+              activeTab === 'copilot'
+                ? 'bg-[#EDF5FF] text-[#0C54EA] border-l-4 border-[#0C54EA]'
+                : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+            }`}
+          >
+            <div className="flex items-center space-x-2.5">
+              <Sparkles className={`w-4 h-4 ${activeTab === 'copilot' ? 'text-[#0C54EA]' : 'text-amber-500'}`} />
+              <span>Recovery Copilot</span>
+            </div>
+            <span className="text-[9px] px-1.5 py-0.2 rounded font-extrabold bg-blue-50 text-[#0C54EA] border border-blue-200">RAG AI</span>
+          </button>
+
+          <button
             onClick={() => setActiveTab('analytics')}
             className={`w-full flex items-center space-x-2.5 px-3 py-2.5 rounded-xl transition-all font-bold ${
               activeTab === 'analytics'

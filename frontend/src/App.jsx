@@ -9,7 +9,9 @@ import { AuditLogs } from './pages/AuditLogs';
 import { Evaluation } from './pages/Evaluation';
 import { Settings } from './pages/Settings';
 import { Analytics } from './pages/Analytics';
+import { Copilot } from './pages/Copilot';
 import { WebhookSimulatorModal } from './components/simulator/WebhookSimulatorModal';
+import { AdminCopilotWidget } from './components/chat/AdminCopilotWidget';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -56,6 +58,10 @@ export default function App() {
               />
             )}
 
+            {activeTab === 'copilot' && (
+              <Copilot onSelectCase={handleSelectCase} />
+            )}
+
             {activeTab === 'recoveries' && (
               <RecoveryCases
                 key={refreshTrigger}
@@ -87,6 +93,12 @@ export default function App() {
         isOpen={isSimulatorOpen}
         onClose={() => setIsSimulatorOpen(false)}
         onSuccess={handleSimulatorSuccess}
+      />
+
+      {/* Global RAG AI Copilot Widget for easy communication on any screen */}
+      <AdminCopilotWidget
+        currentCaseId={selectedCaseId}
+        onNavigateToCase={handleSelectCase}
       />
     </div>
   );
