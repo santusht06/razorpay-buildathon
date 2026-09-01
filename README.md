@@ -73,6 +73,65 @@ cd ../frontend
 npm install
 ```
 
+*Optional:* Use Docker Compose to spin up the full stack (backend, frontend, MongoDB, Redis) in one command:
+
+```bash
+docker compose up -d
+```
+
+---
+
+## Usage
+
+### Local Development
+
+```bash
+# Backend (FastAPI) server
+make dev-backend
+
+# Frontend (Vite React) server
+make dev-frontend
+```
+
+### Docker Compose
+
+```bash
+# Start all services
+make docker-up
+
+# Stop and remove containers
+make docker-down
+
+# View real‑time logs
+make docker-logs
+```
+
+### Testing & Cleanup
+
+```bash
+# Run backend compilation check and frontend build
+make test
+
+# Remove build artifacts and temporary files
+make clean
+```
+
+---
+
+## Quick Start
+
+### 1. Run Backend
+```bash
+cd backend
+./venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000
+```
+
+### 2. Run Frontend
+```bash
+cd frontend
+npm run dev
+```
+
 Open `http://localhost:5173` in your browser.
 
 ---
@@ -85,4 +144,4 @@ Open `http://localhost:5173` in your browser.
 - `GET /api/v1/recoveries/{id}` - Full lifecycle detail & audit trail
 - `POST /api/v1/demo/scenarios/{scenario}` - Trigger demo scenarios (`scenario-1`, `scenario-2`, `scenario-3`, `scenario-4`)
 - `POST /api/v1/webhooks/razorpay` - Razorpay webhook ingestion endpoint
-- `POST /api/v1/recovery/evaluation/run` - Run 1,000-case synthetic benchmark
+- `POST /api/v1/recovery/evaluation/run` - Run 1,000‑case synthetic benchmark
