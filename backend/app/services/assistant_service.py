@@ -21,10 +21,9 @@ YOU HAVE ACCESS TO:
 3. Case Details: Customer history, AI diagnosis, confidence scores, and action audit logs.
 
 GUIDELINES:
-- Provide concise, executive-ready, professional responses formatted with clean Markdown (bolding, bullet points, rupee symbols ₹).
-- Ground your answers in the provided Live Context and RAG Policies. Never hallucinate numbers.
-- When referencing a case ID (e.g., rc_1234567890), clearly state its status, amount, failure reason, and recommended strategy.
-- If the merchant asks to approve, retry, or investigate a case, provide direct assistance and note the action taken.
+- Provide direct, highly relevant, executive-ready responses formatted with clean Markdown (bolding, bullet points, rupee symbols ₹).
+- Answer the EXACT question the merchant asked. Do not repeat case details unless asked specifically about that case.
+- When answering policy questions (e.g. ₹50,000 threshold, retry limits), quote the exact merchant rules from the RAG playbooks.
 """
 
 class AssistantService:
@@ -49,7 +48,8 @@ class AssistantService:
         
         # Check if a specific case ID was mentioned in message or context
         case_id_match = re.search(r'\b(rc_[a-zA-Z0-9_-]+)\b', msg_clean)
-        target_case_id = case_id_match.group(1) if case_id_match else context_case_id
+        explicit_case_id = case_id_match.group(1) if case_id_match else None
+        target_case_id = explicit_case_id or context_case_id
 
         specific_case = None
         case_decision = None
@@ -65,29 +65,26 @@ class AssistantService:
         # Check for direct action intents (e.g., "approve rc_...", "retry rc_...")
         if "approve" in msg_lower and specific_case:
             if specific_case.get("recovery_status") == RecoveryStatus.ESCALATED.value:
-                # Trigger approve
-                await db_col("recovery_cases").update_one(
-                    {"case_id": target_case_id},
-                    {"$set": {"recovery_status": RecoveryStatus.RECOVERING.value, "updated_at": datetime.now(timezone.utc).isoformat()}}
-                )
+                # Trigger approve via RecoveryService / DB
+                await RecoveryService.process_merchant_approval(target_case_id)
                 action_taken = {
                     "type": "APPROVED",
                     "case_id": target_case_id,
-                    "message": f"Successfully approved case {target_case_id}. Autonomous recovery action initiated."
+                    "message": f"Successfully approved case {target_case_id}. Autonomous VIP recovery action initiated."
                 }
             else:
                 action_taken = {
                     "type": "INFO",
                     "case_id": target_case_id,
-                    "message": f"Case {target_case_id} is already in status '{specific_case.get('recovery_status')}'."
+                    "message": f"Case {target_case_id} is in status '{specific_case.get('recovery_status')}'."
                 }
 
-        # Fetch recent 5 cases for general context
+        # Fetch recent cases and escalated cases
+        escalated_cases = await db_col("recovery_cases").find({"recovery_status": RecoveryStatus.ESCALATED.value}).sort("created_at", -1).limit(5).to_list(5)
         recent_cases = await db_col("recovery_cases").find({}).sort("created_at", -1).limit(5).to_list(5)
         
-        # 2. RAG Semantic Policy Retrieval
-        retrieval_query = f"{msg_clean} {specific_case.get('failure_reason', '') if specific_case else ''}"
-        rag_policies = adaptive_policy_retriever.retrieve_relevant_policies(retrieval_query, top_k=3)
+        # 2. RAG Semantic Policy Retrieval based on query
+        rag_policies = adaptive_policy_retriever.retrieve_relevant_policies(msg_clean, top_k=3)
 
         # 3. Build Augmented Context for LLM
         context_payload = {
@@ -103,19 +100,17 @@ class AssistantService:
                 {"title": p["title"], "category": p["category"], "content": p["content"]}
                 for p in rag_policies
             ],
-            "recent_cases_summary": [
+            "escalated_cases": [
                 {
                     "case_id": c.get("case_id"),
                     "amount": f"₹{c.get('amount_at_risk', 0):,.2f}",
-                    "failure_reason": c.get("failure_reason"),
-                    "status": c.get("recovery_status"),
-                    "strategy": c.get("selected_strategy")
+                    "failure_reason": c.get("failure_reason")
                 }
-                for c in recent_cases
+                for c in escalated_cases
             ]
         }
 
-        if specific_case:
+        if specific_case and (explicit_case_id or any(t in msg_lower for t in ["this case", "diagnosis", "customer", "why was", "details"])):
             context_payload["focused_case"] = {
                 "case_id": specific_case.get("case_id"),
                 "amount": f"₹{specific_case.get('amount_at_risk', 0):,.2f}",
@@ -130,11 +125,11 @@ class AssistantService:
                 "recovery_probability": f"{int((case_decision.get('recovery_probability', 0) * 100))}%" if case_decision else "—"
             }
 
-        # 4. Generate AI Response via Groq / Heuristic LLM Router
-        reply_text = await cls._generate_reply(msg_clean, context_payload, conversation_history)
+        # 4. Generate AI Response
+        reply_text = await cls._generate_reply(msg_clean, context_payload, conversation_history, explicit_case_id is not None)
 
         # 5. Suggested follow-up prompts
-        suggested_prompts = cls._generate_suggested_prompts(metrics, specific_case)
+        suggested_prompts = cls._generate_suggested_prompts(metrics, specific_case, msg_lower)
 
         return {
             "reply": reply_text,
@@ -153,54 +148,115 @@ class AssistantService:
         cls,
         user_message: str,
         context: Dict[str, Any],
-        history: List[Dict[str, str]]
+        history: List[Dict[str, str]],
+        explicit_case_requested: bool
     ) -> str:
         """
-        Generates assistant response using Groq / Multi-Model router or high-precision domain synthesizer.
+        Generates assistant response using Groq / Multi-Model router with rich dynamic domain RAG fallback.
         """
         # Try Groq LLM if configured
-        if settings.GROQ_API_KEY:
-            try:
-                from groq import AsyncGroq
-                client = AsyncGroq(api_key=settings.GROQ_API_KEY)
+        if settings.GROQ_API_KEY and len(settings.GROQ_API_KEY) > 10:
+            for model_name in ["llama-3.3-70b-versatile", "mixtral-8x7b-32768", "gemma2-9b-it"]:
+                try:
+                    from groq import AsyncGroq
+                    client = AsyncGroq(api_key=settings.GROQ_API_KEY)
 
-                messages = [{"role": "system", "content": ASSISTANT_SYSTEM_PROMPT}]
-                
-                # Add past 4 messages for conversational continuity
-                for h in history[-4:]:
-                    messages.append({"role": h.get("role", "user"), "content": h.get("content", "")})
+                    messages = [{"role": "system", "content": ASSISTANT_SYSTEM_PROMPT}]
+                    for h in history[-4:]:
+                        messages.append({"role": h.get("role", "user"), "content": h.get("content", "")})
 
-                prompt_content = f"""
-LIVE REAL-TIME CONTEXT:
-{json.dumps(context, indent=2)}
+                    prompt_content = f"CONTEXT:\n{json.dumps(context, indent=2)}\n\nUSER QUESTION:\n{user_message}"
+                    messages.append({"role": "user", "content": prompt_content})
 
-MERCHANT QUESTION:
-{user_message}
-"""
-                messages.append({"role": "user", "content": prompt_content})
+                    res = await client.chat.completions.create(
+                        model=model_name,
+                        messages=messages,
+                        temperature=0.1,
+                        max_tokens=600
+                    )
+                    reply = res.choices[0].message.content.strip()
+                    if reply:
+                        return reply
+                except Exception as e:
+                    logger.warning(f"Groq {model_name} failed: {e}. Trying next or domain fallback.")
 
-                res = await client.chat.completions.create(
-                    model="llama-3.3-70b-versatile",
-                    messages=messages,
-                    temperature=0.2,
-                    max_tokens=600
-                )
-                return res.choices[0].message.content.strip()
-            except Exception as e:
-                logger.warning(f"Assistant Groq LLM failed: {e}. Falling back to domain RAG synthesizer.")
-
-        # High-precision domain RAG synthesizer fallback
-        return cls._synthesize_fallback_reply(user_message, context)
+        # Deep domain RAG synthesizer with intent analysis
+        return cls._synthesize_fallback_reply(user_message, context, explicit_case_requested)
 
     @classmethod
-    def _synthesize_fallback_reply(cls, message: str, context: Dict[str, Any]) -> str:
+    def _synthesize_fallback_reply(cls, message: str, context: Dict[str, Any], explicit_case_requested: bool) -> str:
         msg_lower = message.lower()
         metrics = context.get("live_metrics", {})
         policies = context.get("retrieved_merchant_policies", [])
         focused = context.get("focused_case")
+        escalated = context.get("escalated_cases", [])
 
-        # Specific Case Query
-        if focused:
+        # 1. Policy & Guardrail Questions (e.g. ₹50,000 limit, retry count, fraud stops)
+        if any(term in msg_lower for term in ["policy", "guardrail", "limit", "rule", "50000", "50k", "threshold", "ceiling", "safety", "rules"]):
+            policy_snippets = "\n\n".join([
+                f"📌 **{p['title']}** ({p['category']}):\n{p['content']}"
+                for p in policies
+            ])
+            return f"""### 🛡️ Merchant Recovery Policy & Guardrails
+
+Here is the exact merchant policy configuration retrieved from our RAG knowledge base:
+
+{policy_snippets}
+
+---
+### 🔒 Key Deterministic Guardrails Enforced:
+1. **₹50,000 Value Ceiling (Level 3 Bounded Autonomy):** Any transaction $\ge ₹50,000$ is **strictly blocked** from automatic retries and escalated for manual merchant authorization.
+2. **Maximum 3 Retries:** Automatic retries are capped at 3 attempts per invoice to safeguard merchant reputation and prevent gateway penalties.
+3. **Instant Security Halts:** Terminal stolen cards or fraud flags halt the recovery loop immediately (0 retries).
+4. **Smart Channel Selection:** Soft insufficient funds receive 1-click payment links, while expired cards trigger payment method update portals."""
+
+        # 2. Escalations & Approvals Questions
+        if any(term in msg_lower for term in ["require approval", "requiring approval", "escalat", "pending approval", "manual approval", "approval needed"]):
+            if escalated:
+                cases_list = "\n".join([f"- **Case `{c['case_id']}`**: **{c['amount']}** — Reason: `{c['failure_reason']}` (Action: type `Approve {c['case_id']}`)" for c in escalated])
+                return f"""### 🚨 Cases Requiring Merchant Approval
+
+There are currently **{len(escalated)} escalated transactions** exceeding the ₹50,000 safety threshold:
+
+{cases_list}
+
+**To approve any case:** Type `Approve <case_id>` or click the **Approve** button on the recovery timeline."""
+            else:
+                return f"""### ✅ No Pending Escalations
+
+There are currently **0 escalated cases** requiring merchant approval. All transactions under ₹50,000 are being handled autonomously by Level 1 and Level 2 recovery agents."""
+
+        # 3. Strategy & Mechanism Questions (e.g. Expired Cards vs Soft Declines, UPI, Backoff)
+        if any(term in msg_lower for term in ["expired card", "soft decline", "how does the ai handle", "difference", "backoff", "mandate", "upi", "3ds", "strategy"]):
+            return f"""### 🧠 AI Strategy Breakdown: Failure Modes & Recovery Paths
+
+The Recovery Agent adapts its strategy dynamically based on failure categorization:
+
+| Failure Category | Root Cause | AI Action | Why This Strategy? |
+| :--- | :--- | :--- | :--- |
+| **Soft Decline** | Temporary balance / limit | `SEND_RECOVERY_EMAIL` | 1-click Razorpay payment link sent at payday window |
+| **Expired Card** | Expired card credentials | `REQUEST_PAYMENT_METHOD_UPDATE` | Directs customer to update card details without blind retries |
+| **UPI Mandate** | Daily limit / PSP timeout | `SEND_RECOVERY_EMAIL` | Triggers 1-click UPI Intent link bypassing mandate limit |
+| **Bank Outage** | Gateway network timeout | `SCHEDULE_RETRY` | 4-hour exponential backoff once bank recovers |
+| **High-Value (>₹50k)** | Enterprise transaction | `ESCALATE` | Guardrail block for VIP concierge review |
+| **Fraud / Stolen** | Security blacklist | `STOP` | Immediate halt to protect merchant chargeback ratio |"""
+
+        # 4. Metrics & Performance Queries
+        if any(term in msg_lower for term in ["revenue", "summary", "stats", "metrics", "rate", "kpi", "performance", "recovered", "how much"]):
+            return f"""### 📊 Real-Time Recovery Ledger Summary
+
+Here is your live revenue recovery performance across all monitored transactions:
+
+- 💰 **Total Revenue Recovered:** **{metrics.get('revenue_recovered')}**
+- ⚠️ **Revenue at Risk:** **{metrics.get('revenue_at_risk')}**
+- 📈 **Conversion Win-Rate:** **{metrics.get('recovery_rate')}**
+- 🔄 **Active Recoveries in Flight:** **{metrics.get('active_recoveries')}**
+- 🚨 **Cases Requiring Merchant Approval:** **{metrics.get('escalated_cases_needing_approval')}**
+
+Our bounded autonomous pipeline eliminates wasteful retries while capturing recoverable revenue across card, UPI, and netbanking channels."""
+
+        # 5. Specific Case Diagnosis Query (Only when asked or explicitly referenced)
+        if focused and (explicit_case_requested or any(t in msg_lower for t in ["this case", "diagnosis", "customer", "why was", "details", "explain"])):
             return f"""### 📋 Case Details: `{focused['case_id']}`
 
 - **Customer:** {focused['customer_name']} ({focused['customer_email']}) | **LTV:** {focused['customer_ltv']}
@@ -213,66 +269,49 @@ MERCHANT QUESTION:
 **AI Business Rationale:**  
 _{focused['ai_reasoning']}_
 
-{"💡 **Action Available:** You can approve this case by typing `Approve " + focused['case_id'] + "`." if focused['status'] == 'ESCALATED' else ""}
-"""
+{"💡 **Action Available:** You can approve this case by typing `Approve " + focused['case_id'] + "`." if focused['status'] == 'ESCALATED' else ""}"""
 
-        # Metrics / Revenue Summary
-        if any(term in msg_lower for term in ["revenue", "summary", "stats", "metrics", "rate", "kpi", "performance", "recovered"]):
-            return f"""### 📊 Live Revenue Recovery Performance
-
-Here is your real-time recovery dashboard summary:
-
-- 💰 **Total Revenue Recovered:** **{metrics.get('revenue_recovered')}**
-- ⚠️ **Revenue at Risk:** **{metrics.get('revenue_at_risk')}**
-- 📈 **Recovery Conversion Rate:** **{metrics.get('recovery_rate')}**
-- 🔄 **Active Recoveries in Progress:** **{metrics.get('active_recoveries')}**
-- 🚨 **Escalated Cases (Awaiting Approval):** **{metrics.get('escalated_cases_needing_approval')}**
-
-Our autonomous recovery pipeline has successfully mitigated subscriber churn by automatically deploying personalized retry links and card update portals."""
-
-        # Policy & Guardrail Questions
-        if any(term in msg_lower for term in ["policy", "guardrail", "limit", "rule", "outage", "fraud", "50000", "50k"]):
-            policy_snippets = "\n\n".join([
-                f"**{p['title']}** ({p['category']}):\n{p['content']}"
-                for p in policies[:2]
-            ])
-            return f"""### 🛡️ Merchant Recovery Policy Grounding
-
-Based on our active merchant RAG playbooks:
-
-{policy_snippets}
-
-**Key Guardrails:**
-- **₹50,000 Limit:** Any transaction $\ge ₹50,000$ requires manual merchant authorization (Level 3 bounded autonomy).
-- **Fraud Halts:** Terminal fraud or stolen cards immediately stop all retries to protect gateway health.
-- **Max Retries:** Capped at 3 automatic attempts."""
-
-        # Default Helpful Copilot Response
+        # 6. General Conversational / Helpful Answer
         return f"""### 🤖 Razorpay Recovery Copilot
 
-I can assist you with your autonomous revenue recovery operations:
+I can help you monitor and operate your autonomous recovery pipeline:
 
-- **Financial Analytics:** Total recovered: **{metrics.get('revenue_recovered')}** ({metrics.get('recovery_rate')} conversion rate).
-- **Approvals & Escalations:** **{metrics.get('escalated_cases_needing_approval')}** cases currently require merchant review.
-- **Case Diagnostics:** Give me any case ID (e.g. `rc_...`) to inspect AI reasoning, customer reliability, and audit logs.
-- **Policy Inquiries:** Ask about merchant guardrails, retry limits, or UPI mandate rules.
+- 📊 **Revenue Analytics:** Total recovered: **{metrics.get('revenue_recovered')}** ({metrics.get('recovery_rate')} win rate).
+- 🚨 **Escalations:** **{metrics.get('escalated_cases_needing_approval')}** transactions awaiting merchant review.
+- 🛡️ **Policies:** Ask about the ₹50,000 limit, 3-retry maximum, or security rules.
+- ⚡ **Direct Actions:** Type `Approve <case_id>` to authorize high-value transactions.
 
-How can I help you optimize recovery today?"""
+How would you like to proceed?"""
 
     @classmethod
     def _generate_suggested_prompts(
         cls,
         metrics: Dict[str, Any],
-        specific_case: Optional[Dict[str, Any]]
+        specific_case: Optional[Dict[str, Any]],
+        msg_lower: str
     ) -> List[str]:
-        prompts = [
+        if "policy" in msg_lower or "guardrail" in msg_lower:
+            return [
+                "What cases currently require merchant approval?",
+                "Explain how the AI handles expired cards vs soft declines",
+                "Summarize our revenue recovery performance",
+                "What is our policy for bank gateway outages?"
+            ]
+        elif "revenue" in msg_lower or "metrics" in msg_lower:
+            return [
+                "What cases currently require merchant approval?",
+                "What is our policy for ₹50,000+ high-value transactions?",
+                "Explain how the AI handles expired cards vs soft declines"
+            ]
+        elif specific_case:
+            return [
+                f"Explain the AI diagnosis for {specific_case.get('case_id')}",
+                "What is our policy for ₹50,000+ high-value transactions?",
+                "Summarize our revenue recovery performance"
+            ]
+        return [
             "Summarize our revenue recovery performance",
             "What cases currently require merchant approval?",
             "What is our policy for ₹50,000+ high-value transactions?",
             "Explain how the AI handles expired cards vs soft declines"
         ]
-        if specific_case:
-            prompts.insert(0, f"Explain the AI diagnosis for {specific_case.get('case_id')}")
-            if specific_case.get("recovery_status") == "ESCALATED":
-                prompts.insert(1, f"Approve case {specific_case.get('case_id')}")
-        return prompts[:4]

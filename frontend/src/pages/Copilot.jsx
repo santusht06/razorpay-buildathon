@@ -4,6 +4,8 @@ import {
   ChevronRight, Trash2, BookOpen, BarChart3, RotateCcw, AlertTriangle,
   ArrowRight
 } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { api } from '../api';
 
 export const Copilot = ({ onSelectCase }) => {
@@ -15,15 +17,16 @@ export const Copilot = ({ onSelectCase }) => {
 I am your **Autonomous Revenue Recovery Copilot**, grounded in your live MongoDB transactions and merchant playbooks.
 
 You can ask me to:
-1. 📊 **Financial KPIs:** *"Summarize our recovered revenue and win-rate today."*
-2. 🔍 **Case Audits:** *"Why was case rc_... escalated?"* or *"Analyze Priya Sharma's payment failure."*
-3. 🛡️ **Policy Inquiries:** *"What are our guardrails for ₹50,000+ payments and expired cards?"*
-4. ⚡ **Direct Actions:** *"Approve case rc_..."* to authorize high-value transactions.`,
+- 📊 **Financial KPIs:** *"Summarize our recovered revenue and win-rate today."*
+- 🔍 **Case Audits:** *"Why was case rc_... escalated?"* or *"Analyze Priya Sharma's payment failure."*
+- 🛡️ **Policy Inquiries:** *"What is our policy for ₹50,000+ high-value transactions?"*
+- 🚨 **Escalations:** *"What cases currently require merchant approval?"*
+- ⚡ **Direct Actions:** *"Approve case rc_..."* to authorize high-value transactions.`,
       sources: ['Merchant Recovery Playbook', 'Live DB Ledger'],
       suggested_prompts: [
+        'What is our policy for ₹50,000+ high-value transactions?',
         'Summarize our revenue recovery performance',
         'What cases currently require merchant approval?',
-        'What is our policy for ₹50,000+ high-value transactions?',
         'Explain how the AI handles expired cards vs soft declines'
       ]
     }
@@ -160,8 +163,10 @@ You can ask me to:
                     : 'bg-white border border-slate-200 text-slate-800 rounded-tl-none space-y-3'
                 }`}
               >
-                <div className="prose prose-xs max-w-none font-sans leading-relaxed whitespace-pre-wrap">
-                  {msg.content}
+                <div className="prose prose-xs max-w-none font-sans leading-relaxed text-slate-800 space-y-2 [&_h3]:font-black [&_h3]:text-[#02042B] [&_h3]:text-sm [&_h3]:mb-1 [&_strong]:text-[#02042B] [&_strong]:font-bold [&_ul]:list-disc [&_ul]:pl-4 [&_li]:mb-1 [&_table]:w-full [&_table]:border-collapse [&_th]:bg-slate-100 [&_th]:p-2 [&_th]:border [&_td]:p-2 [&_td]:border [&_td]:text-xs [&_code]:bg-slate-100 [&_code]:text-[#0C54EA] [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:font-mono">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {msg.content}
+                  </ReactMarkdown>
                 </div>
 
                 {msg.action_taken && (
@@ -188,7 +193,7 @@ You can ask me to:
 
                 {msg.suggested_prompts && msg.suggested_prompts.length > 0 && idx === messages.length - 1 && (
                   <div className="pt-3 border-t border-slate-100 space-y-2">
-                    <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Suggested Quick Actions:</div>
+                    <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Suggested Quick Inquiries:</div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                       {msg.suggested_prompts.map((prompt, pIdx) => (
                         <button
