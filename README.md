@@ -1,5 +1,7 @@
 # Autonomous AI Revenue Recovery Platform
 
+![AI Maintained](https://img.shields.io/badge/readme-AI%20maintained-blue)
+
 > **Razorpay AI Innovation Hackathon — Track 3: AI Revenue Recovery**
 
 An autonomous, production-oriented full-stack revenue recovery platform built for Razorpay merchants. The platform identifies revenue at risk, diagnoses root causes using a LangChain RAG AI Agent, enforces security guardrails via a deterministic policy engine, safely executes recovery actions, strictly verifies captured payment outcomes, and measures total ₹ revenue recovered.
@@ -45,8 +47,6 @@ An autonomous, production-oriented full-stack revenue recovery platform built fo
    - Enforces post‑action payment state checking against Razorpay before marking revenue as recovered.
 
 5. **1,000‑Case Empirical Benchmark**:
-   - Compares **Baseline Naive Rules Engine vs. Autonomous AI Recovery Agent** (measuring incremental ₹ recovered, recovery rate %, and zero wasteful retries).
-
 6. **Interactive Hackathon Demo Scenarios**:
    - **Scenario 1**: ₹2,499 Subscription Temporary Failure → Email → Recovered
    - **Scenario 2**: ₹999 Subscription Expired Card → Payment Method Update Email → Recovered
