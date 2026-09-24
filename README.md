@@ -47,6 +47,8 @@ An autonomous, production-oriented full-stack revenue recovery platform built fo
    - Enforces post‑action payment state checking against Razorpay before marking revenue as recovered.
 
 5. **1,000‑Case Empirical Benchmark**:
+   - Compares **Baseline Naive Rules Engine vs. Autonomous AI Recovery Agent** (measuring incremental ₹ recovered, recovery rate %, and zero wasteful retries).
+
 6. **Interactive Hackathon Demo Scenarios**:
    - **Scenario 1**: ₹2,499 Subscription Temporary Failure → Email → Recovered
    - **Scenario 2**: ₹999 Subscription Expired Card → Payment Method Update Email → Recovered
@@ -59,7 +61,7 @@ An autonomous, production-oriented full-stack revenue recovery platform built fo
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-org/razorpay-buildathon.git
+git clone [https://github.com/your-org/razorpay-buildathon.git](https://github.com/your-org/razorpay-buildathon.git)
 cd razorpay-buildathon
 
 # Backend setup
@@ -95,8 +97,6 @@ make dev-frontend
 
 ### Docker Compose
 
-```bash
-# Start all services
 make docker-up
 
 # Stop and remove containers
