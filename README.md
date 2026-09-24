@@ -97,6 +97,8 @@ make dev-frontend
 
 ### Docker Compose
 
+```bash
+# Start all services
 make docker-up
 
 # Stop and remove containers
@@ -132,7 +134,7 @@ cd frontend
 npm run dev
 ```
 
-Open `http://localhost:5173` in your browser.
+Open `[http://localhost:5173`](http://localhost:5173`) in your browser.
 
 ---
 
